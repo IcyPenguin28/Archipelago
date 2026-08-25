@@ -418,9 +418,9 @@ class DotDContext(CommonContext):
         """
         if "Blue Gem" in item_name:
             self._total_blue_gems += 1
-        elif item_name == "Health Gem S":
+        elif item_name == "Small Health Gem":
             self.handle_receive_health_gem_s()   # instant, one-shot
-        elif item_name == "Mana Gem S":
+        elif item_name == "Small Mana Gem":
             self.handle_receive_mana_gem_s()
         elif "Red Life Crystal" in item_name:
             self._total_health_gems += 1
@@ -438,7 +438,7 @@ class DotDContext(CommonContext):
             elif "Dragon's" in item_name:
                 self._learned_fury[0] = True
                 self._learned_fury[1] = True
-        # Instant consumables (Health Gem S / Mana Gem S) are handled inside
+        # Instant consumables (Small Health Gem / Small Mana Gem) are handled inside
         # handle_receive_item because they are meant to be applied once per
         # receipt, not re-applied on reconnect.
 

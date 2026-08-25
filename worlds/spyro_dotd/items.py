@@ -34,10 +34,10 @@ ITEM_NAME_TO_ID = {
     "Cynder Bracers Silver": 20,
     "Cynder Bracers Gold": 21,
     "Cynder Bracers Fury": 22,
-    "Health Gem S": 23, # This is the small gem that the player can pick up to recover their HP
-    "Mana Gem S": 24,   # Likewise, but for Mana
-    "Dragons' Flight": 25,
-    "Dragons' Elements": 26,
+    "Small Health Gem": 23, # This is the small gem that the player can pick up to recover their HP
+    "Small Mana Gem": 24,   # Likewise, but for Mana
+    "Dragons' Flight": 25,    # NOTE: Deprecated. We will no longer be gating flight.
+    "Dragons' Elements": 26,  # NOTE: Deprecated. Elements are now handled per dragon or individually.
     "Spyro's Elements": 27,
     "Cynder's Elements": 28,
     "Wall Climbing": 29,
@@ -45,7 +45,15 @@ ITEM_NAME_TO_ID = {
     "Progressive Chapter Unlock": 31,
     "Dragon's Fury": 32,
     "Spyro's Fury": 33,
-    "Cynder's Fury": 34
+    "Cynder's Fury": 34,
+    "Fire": 35,
+    "Electricity": 36,
+    "Ice": 37,
+    "Earth": 38,
+    "Poison": 39,
+    "Fear": 40,
+    "Wind": 41,
+    "Shadow": 42
 }
 
 # Items should havea defined default classification.
@@ -73,16 +81,24 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     "Cynder Bracers Silver": ItemClassification.useful,
     "Cynder Bracers Gold": ItemClassification.useful,
     "Cynder Bracers Fury": ItemClassification.useful,
-    "Health Gem S": ItemClassification.filler,
-    "Mana Gem S": ItemClassification.filler,
-    "Dragons' Flight": ItemClassification.progression,
-    "Dragons' Elements": ItemClassification.progression,
+    "Small Health Gem": ItemClassification.filler,
+    "Small Mana Gem": ItemClassification.filler,
+    "Dragons' Flight": ItemClassification.progression,      # NOTE: Deprecated. We will no longer be gating flight.
+    "Dragons' Elements": ItemClassification.progression,    # NOTE: Deprecated. Elements are now handled per dragon or individually.
     "Spyro's Elements": ItemClassification.progression,
     "Cynder's Elements": ItemClassification.progression,
     "Progressive Chapter Unlock": ItemClassification.progression,
     "Dragon's Fury": ItemClassification.progression,
     "Spyro's Fury": ItemClassification.progression,
-    "Cynder's Fury": ItemClassification.progression
+    "Cynder's Fury": ItemClassification.progression,
+    "Fire": ItemClassification.progression,
+    "Electricity": ItemClassification.progression,
+    "Ice": ItemClassification.progression,
+    "Earth": ItemClassification.progression,
+    "Poison": ItemClassification.progression,
+    "Fear": ItemClassification.progression,
+    "Wind": ItemClassification.progression,
+    "Shadow": ItemClassification.progression
 }
 
 # Each Item instance must correctly report to the "game" it belongs to.
@@ -95,7 +111,7 @@ class DotDItem(Item):
 # For now, let's make a function that returns the name of a random filler item in here in items.py.
 def get_random_filler_item_name(world: DotDWorld) -> str:
     # NOTE: Use world.random when need RNG
-    return "Health Gem S" if world.random.randint(0, 1) == 0 else "Mana Gem S"
+    return "Small Health Gem" if world.random.randint(0, 1) == 0 else "Small Mana Gem"
 
 def create_item_with_correct_classification(world: DotDWorld, name: str) -> DotDItem:
     # Our world class must have a create_item() function that can create any of our items by name at any time.
@@ -177,6 +193,25 @@ def create_all_items(world: DotDWorld) -> None:
         itempool.append(world.create_item("Spyro's Fury"))
     elif world.options.learn_fury.current_key == "cynder":
         itempool.append(world.create_item("Cynder's Fury"))
+
+    # Handle adding shuffled elements to item pool
+    if world.options.shuffled_elements.value:
+        # Elements have been shuffled, determine how they're being handled and by which dragon.
+        # Handle Spyro Elements
+        if any(element in world.options.shuffled_elements.value for element in ["Fire", "Electricity", "Ice", "Earth"]):
+            if world.options.spyro_elements_handling.current_key == "individual":
+                for element in world.options.shuffled_elements.value.intersection({"Fire", "Electricity", "Ice", "Earth"}):
+                    itempool.append(world.create_item(element))
+            else:
+                itempool.append(world.create_item("Spyro's Elements"))
+        # Handle Cynder Elements
+        if any(element in world.options.shuffled_elements.value for element in ["Poison", "Fear", "Wind", "Shadow"]):
+            if world.options.cynder_elements_handling.current_key == "individual":
+                for element in world.options.shuffled_elements.value.intersection({"Poison", "Fear", "Wind", "Shadow"}):
+                    itempool.append(world.create_item(element))
+            else:
+                itempool.append(world.create_item("Cynder's Elements"))
+
     
     # Archipelago requires that each world submits as many locations as it submits items.
     # This is where we can use our filler and trap items.

@@ -82,7 +82,7 @@ class ShuffleChapterOrder(Toggle):
 class ShuffledElements(ItemSet):
     """
     Any elements added to this set will be unselectable until obtained via an item.
-    Fire and Poison are unsupported by this feature.
+    Fire and Poison are unsupported by this feature due to a lack of checks prior to their use in the Catacombs.
     Use the Spyro/Cynder Elements Handling options for finer control.
     """
     valid_keys = ["Electricity", "Ice", "Earth", "Fear", "Wind", "Shadow"]
