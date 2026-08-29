@@ -17,6 +17,7 @@ from .options import DotDOptions
 from .world import DotDWorld
 from .locations import LOCATION_FLAG_ADDRESS_TO_NAME, LOCATION_NAME_TO_ID
 from .pcsx2_interface.pine import Pine
+# from .interface import install_element_rando_hook
 
 import logging
 logging.getLogger("websockets").setLevel(logging.WARNING)
@@ -98,6 +99,29 @@ ADDR_DESTROYER_CLEAR = 0x9FECDB
 ADDR_BURNED_CLEAR = 0x9FECDC
 ADDR_ISLANDS_CLEAR = 0x9FECDD
 ADDR_MALEFOR_CLEAR = 0x9FECDE
+
+# Element Rando scratch addresses
+ADDR_FIRE_UNLOCKED = 0x00A6C6A0
+ADDR_ICE_UNLOCKED = 0x00A6C6A1
+ADDR_EARTH_UNLOCKED = 0x00A6C6A2
+ADDR_ELEC_UNLOCKED = 0x00A6C6A3
+ADDR_POISON_UNLOCKED = 0x00A6C6A4
+ADDR_SHADOW_UNLOCKED = 0x00A6C6A5
+ADDR_FEAR_UNLOCKED = 0x00A6C6A6
+ADDR_WIND_UNLOCKED = 0x00A6C6A7
+
+ALL_ELEMENTS_SET = {"Fire", "Electricity", "Ice", "Earth", "Poison", "Fear", "Wind", "Shadow"}
+
+ELEMENT_NAME_TO_UNLOCKED_ADDRESS = {
+    "Fire": ADDR_FIRE_UNLOCKED,
+    "Electricity": ADDR_ELEC_UNLOCKED,
+    "Ice": ADDR_ICE_UNLOCKED,
+    "Earth": ADDR_EARTH_UNLOCKED,
+    "Poison": ADDR_POISON_UNLOCKED,
+    "Fear": ADDR_FEAR_UNLOCKED,
+    "Wind": ADDR_WIND_UNLOCKED,
+    "Shadow": ADDR_SHADOW_UNLOCKED
+}
 
 # Pointer to class values
 # Every object of a given class has the same pointer value at offset 0x0
@@ -291,11 +315,14 @@ class DotDContext(CommonContext):
 
         # Armor names received — set-based, naturally idempotent
         self._received_armor: Set[str] = set()
+        # Same with learned elements
+        self._learned_elements: Set[str] = ALL_ELEMENTS_SET
 
         # Default options values
         self.death_link_enabled = False
         self.player_dead = False
         self.learn_fury = 0
+        self.shuffled_elements = set()
 
         # Whether game-version check has passed
         self._game_version_ok: bool = False
@@ -339,6 +366,10 @@ class DotDContext(CommonContext):
     def on_package(self, cmd: str, args: dict):
         if cmd == "Connected":
             print("Connected to Archipelago!")
+
+            # Get shuffled elements before resetting item state since _reset_item_state() seeds _learned_elements from it.
+            self.shuffled_elements: Set = args["slot_data"].get("shuffled_elements", set())
+
             # -------------------------------------------------------
             # On (re)connection: reset cumulative counters and re-apply
             # ALL items from scratch so we always match the server's state.
@@ -373,6 +404,13 @@ class DotDContext(CommonContext):
             if self.learn_fury == 0:
                 self._learned_fury = [True, True]
 
+            # Handle Shuffled Elements
+            # Since elements can be already known on connection, 
+            for element in self._learned_elements:
+                scratch_addr = ELEMENT_NAME_TO_UNLOCKED_ADDRESS.get(element)
+                if scratch_addr:
+                    self.memory.write_bytes(scratch_addr, b"\x01")
+
         elif cmd == "ReceivedItems":
             try:
                 print("Receiving items...")
@@ -395,6 +433,7 @@ class DotDContext(CommonContext):
             except Exception as e:
                 print(f"on_package encountered exception: {e}")
 
+
     # ------------------------------------------------------------------
     # Item state — idempotent accumulation + flush
     # ------------------------------------------------------------------
@@ -409,6 +448,11 @@ class DotDContext(CommonContext):
         self._received_armor = set()
         self._num_chapters_unlocked = 0
         self._learned_fury = [False, False] # accumulate needs to restore the flags from false
+
+        # Seed with the non-shuffled baseline so a full resync starts from
+        # the correct "everything not in the shuffle pool" state
+        self._learned_elements = ALL_ELEMENTS_SET.difference(self.shuffled_elements)
+
 
     def _accumulate_item(self, item_name: str):
         """
@@ -438,6 +482,23 @@ class DotDContext(CommonContext):
             elif "Dragon's" in item_name:
                 self._learned_fury[0] = True
                 self._learned_fury[1] = True
+        elif "Elements" in item_name:
+            # Even if some are already unlocked from not being put into the shuffle pool,
+            # setting them all to 1 will do what needs to be done every time.
+            if "Spyro" in item_name:
+                self._learned_elements.add("Fire")
+                self._learned_elements.add("Electricity")
+                self._learned_elements.add("Ice")
+                self._learned_elements.add("Earth")
+            elif "Cynder" in item_name:
+                self._learned_elements.add("Poison")
+                self._learned_elements.add("Fear")
+                self._learned_elements.add("Wind")
+                self._learned_elements.add("Shadow")
+        elif item_name in ALL_ELEMENTS_SET:
+            # Item is an individual element
+            self._learned_elements.add(item_name)
+
         # Instant consumables (Small Health Gem / Small Mana Gem) are handled inside
         # handle_receive_item because they are meant to be applied once per
         # receipt, not re-applied on reconnect.
@@ -512,9 +573,59 @@ class DotDContext(CommonContext):
         if self.learn_fury == 0:
             self._learned_fury = [True, True]
 
+        # Shuffled Elements: set scratch flags for everything we've received
+        for element in self._learned_elements:
+            scratch_addr = ELEMENT_NAME_TO_UNLOCKED_ADDRESS.get(element)
+            if scratch_addr:
+                self.memory.write_bytes(scratch_addr, b"\x01")
+
     # ------------------------------------------------------------------
     # Patches
     # ------------------------------------------------------------------
+    def install_element_rando(self):
+        routine = bytes([
+            0x00, 0x00, 0x11, 0x24,
+            0x24, 0x00, 0x44, 0x92,
+            0x02, 0x00, 0x80, 0x10,
+            0x21, 0x88, 0x23, 0x02,
+            0x04, 0x00, 0x31, 0x26,
+            0xA6, 0x00, 0x04, 0x3C,
+            0xA0, 0xC6, 0x84, 0x34,
+            0x21, 0x20, 0x91, 0x00,
+            0x00, 0x00, 0x84, 0x90,
+            0x02, 0x00, 0x80, 0x10,
+            0x00, 0x00, 0x00, 0x00,
+            0x70, 0x1D, 0x43, 0xAE,
+            0x13, 0xA7, 0x0D, 0x08,
+            0x01, 0x00, 0x11, 0x64
+        ])
+        hook1 = bytes([
+            0x80, 0xFE, 0x7F, 0x08,
+            0x00, 0x00, 0x03, 0x24
+        ])
+
+        hook2 = bytes([
+            0x80, 0xFE, 0x7F, 0x08,
+            0x25, 0x18, 0x80, 0x00
+        ])
+
+        hook3 = bytes([
+            0x80, 0xFE, 0x7F, 0x08,
+            0x00, 0x00, 0x00, 0x00
+        ])
+
+        hook4 = bytes([
+            0x00, 0x00, 0x03, 0x24,
+            0x80, 0xFE, 0x7F, 0x08
+        ])
+
+        self.memory.write_bytes(0x01FFFA00, routine)
+        self.memory.write_bytes(0x00369A2C, hook1)
+        self.memory.write_bytes(0x00369A34, hook2)
+        self.memory.write_bytes(0x00369A58, hook3)
+        self.memory.write_bytes(0x00369A64, hook3)
+        self.memory.write_bytes(0x00369A8C, hook3)
+        self.memory.write_bytes(0x00369BB4, hook4)
     def apply_patches(self):
         # ARMOR OWNERSHIP BYTE SPLIT
         self.memory.write_bytes(ADDR_ARMOR_OWNERSHIP_CHECK_ROUTINE, bytes([
@@ -545,6 +656,9 @@ class DotDContext(CommonContext):
         # BLUE GEMS GIVE 0 EXP PATCH
         self.memory.write_u32(0x009FEB14, 0)
 
+        # ELEMENT RANDO
+        self.install_element_rando()
+
         print("Game patches applied.")
 
     def restore_scratch_flags(self):
@@ -558,6 +672,12 @@ class DotDContext(CommonContext):
         for i in range(self._num_chapters_unlocked + 1):
             chapter_name = self.chapter_order[i]
             scratch_addr = LEVEL_NAME_TO_SCRATCH_ADDRESS.get(chapter_name)
+            if scratch_addr:
+                self.memory.write_bytes(scratch_addr, b"\x01")
+
+        # Restore element unlock scratch flags from received learned elements set
+        for element in self._learned_elements:
+            scratch_addr = ELEMENT_NAME_TO_UNLOCKED_ADDRESS.get(element)
             if scratch_addr:
                 self.memory.write_bytes(scratch_addr, b"\x01")
 
