@@ -25,3 +25,14 @@ def set_location_rules(world: DotDWorld):
     # Scenery Gallery unlocked when Burned Lands is cleared
     set_rule(scenery_gallery, \
              lambda state: state.can_reach_location("Burned Lands Cleared", world.player))
+
+    # NOTE: The location rules set here are for extra locations that don't fall neatly under sub-regions in regions.py
+    #       For example: Although it is at the waterfall base sub-region, which requires (Fire or Poison) and Electricity,
+    #       the Catacombs Elite still needs Shadow to break the mask and Wall Climbing to beat the Golem to trigger the Elite's spawn.
+
+    # Catacombs Location Logic
+    set_rule(world.get_location("The Catacombs Cleared"), \
+             lambda state: state.has("Wind", world.player))
+    set_rule(world.get_location("Catacombs Elite"), \
+             lambda state: state.has_all(("Shadow", "Wall Climbing"), world.player))
+    

@@ -10,9 +10,34 @@ SHUFFLEABLE_CHAPTERS = [
     "The Destroyer", "Burned Lands", "Floating Islands"
 ]
 
+CATACOMBS_SUBREGION_LOCATIONS = {
+    "Catacombs Beyond Vines": [
+        "Catacombs Blue Gem - Weight Room",
+    ],
+    "Catacombs Waterfall Base": [
+        "Catacombs Blue Gem - Waterfall Room Under Right Breakable Stone",
+        "Catacombs Blue Gem - Waterfall Room Under Left Breakable Stone",
+        "Catacombs Blue Gem - Waterfall Room Right",
+        "Catacombs Blue Gem - Waterfall Room Near Breakable Stones",
+        "Catacombs Health Gem",
+        "Catacombs Mana Gem",
+        "Catacombs Elite"
+    ],
+    "Catacombs Waterfall": [
+        "Catacombs Blue Gem - Waterfall Room Pillars 2",
+        "Catacombs Blue Gem - Waterfall Room Top Left",
+        "Catacombs Blue Gem - Waterfall Room Pillars 1",
+        "Catacombs Blue Gem - Waterfall Room Save Point",
+        "Catacombs Blue Gem - Before Wind Horn",
+        "The Catacombs Cleared"
+    ],
+}
+
 def create_and_connect_regions(world: DotDWorld) -> None:
     create_all_regions(world)
     connect_regions(world)
+
+    connect_subregions_catacombs(world)
 
 
 def create_all_regions(world: DotDWorld) -> None:
@@ -63,10 +88,35 @@ def connect_regions(world: DotDWorld) -> None:
     menu.connect(regions[0])
 
     # Connect menu to gallery for free just for my own sake
-    menu.connect(gallery, "Menu to Gallery")
+    menu.connect(gallery, "Menu -> Gallery")
 
-    for i, region in enumerate(regions):
-        next_region = regions[i + 1] if i + 1 < len(regions) else malefor
+    for i, region in enumerate(regions[1:], start=1):
         def make_rule(n):
             return lambda state: state.count("Progressive Chapter Unlock", player) >= n
-        region.connect(next_region, f"Chapter {i + 1} to Chapter {i + 2}", make_rule(i + 1))
+        menu.connect(region, f"Menu -> Chapter {i + 1}", make_rule(i))
+
+    # Malefor's Lair unlocks once every other chapter has been unlocked
+    menu.connect(malefor, "Menu -> Malefor's Lair",
+                 lambda state: state.count("Progressive Chapter Unlock", player) >= len(regions))
+
+
+def connect_subregions_catacombs(world: DotDWorld):
+    """
+    Splits Catacombs into sub-regions so individual Catacombs locations
+    don't need to restate the same base item requirements redundantly
+    """
+    player = world.player
+    catacombs = world.get_region("Catacombs")
+
+    beyond_vines = Region("Catacombs Beyond Vines", player, world.multiworld)
+    waterfall_base = Region("Catacombs Waterfall Base", player, world.multiworld)
+    waterfall = Region("Catacombs Waterfall", player, world.multiworld)
+
+    world.multiworld.regions += [beyond_vines, waterfall_base, waterfall]
+
+    catacombs.connect(beyond_vines, "Catacombs Entrance -> Beyond Vines", \
+                      rule=lambda state: state.has_any(("Fire", "Poison"), player))
+    beyond_vines.connect(waterfall_base, "Catacombs Beyond Vines -> Waterfall Base", \
+                          rule=lambda state: state.has("Electricity", player))
+    waterfall_base.connect(waterfall, "Catacombs Waterfall Base -> Waterfall", \
+                           rule=lambda state: state.has("Wall Climbing"))
