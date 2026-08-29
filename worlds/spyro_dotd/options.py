@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from Options import Choice, OptionGroup, PerGameCommonOptions, DeathLinkMixin, Range, Toggle, ItemSet, DefaultOnToggle
+from Options import Choice, OptionGroup, PerGameCommonOptions, DeathLinkMixin, Range, Toggle, OptionSet, DefaultOnToggle
 
 # In this file we define the options the player can pick.
 # The most common types of options are Toggle, Range, and Choice.
@@ -79,13 +79,14 @@ class ShuffleChapterOrder(Toggle):
     display_name = "Shuffle Chapter Order"
 
 
-class ShuffledElements(ItemSet):
+class ShuffledElements(OptionSet):
     """
     Any elements added to this set will be unselectable until obtained via an item.
     Fire and Poison are unsupported by this feature due to a lack of checks prior to their use in the Catacombs.
     Use the Spyro/Cynder Elements Handling options for finer control.
     """
-    valid_keys = ["Electricity", "Ice", "Earth", "Fear", "Wind", "Shadow"]
+    display_name = "Shuffled Elements"
+    valid_keys = {"Electricity", "Ice", "Earth", "Fear", "Wind", "Shadow"}
 
 
 class SpyroElementsHandling(Choice):
@@ -97,6 +98,8 @@ class SpyroElementsHandling(Choice):
 
     All At Once: Every shuffled element that belongs to Spyro is obtained via the "Spyro's Elements" item.
     """
+    display_name = "Spyro Elements Handling"
+    
     option_individual = 0
     option_all_at_once = 1
 
@@ -112,6 +115,8 @@ class CynderElementsHandling(Choice):
 
     All At Once: Every shuffled element that belongs to Cynder is obtained via the "Cynder's Elements" item.
     """
+    display_name = "Cynder Elements Handling"
+
     option_individual = 0
     option_all_at_once = 1
 
