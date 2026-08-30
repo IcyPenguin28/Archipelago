@@ -503,11 +503,12 @@ def create_regular_locations(world: DotDWorld) -> None:
             "TF Mana Gem - Before Wind Tunnel",
             "TF Armor Chest - Near Elite",
             "TF Elite",
-            "Objective Complete - Reach the Enchanted Forest",
             # "TF Blue Gem - Behind Vines" and "TF Armor Chest - Behind Vines"
             # now live in TF Beyond Vines.
-            # "TF Health Gem", "TF Blue Gem - End of Level", and
-            # "Twilight Falls Cleared" now live in TF End of Level.
+            # 
+            # "TF Health Gem", "TF Blue Gem - End of Level",
+            # "Twilight Falls Cleared", and "Objective Complete - Reach the Enchanted Forest"
+            # now live in TF End of Level.
         ]
     )
 

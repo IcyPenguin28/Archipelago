@@ -41,7 +41,8 @@ TWILIGHT_FALLS_SUBREGION_LOCATIONS = {
     "TF End of Level": [
         "TF Health Gem",
         "TF Blue Gem - End of Level",
-        "Twilight Falls Cleared"
+        "Twilight Falls Cleared",
+        "Objective Complete - Reach the Enchanted Forest"
     ]
 
 }
