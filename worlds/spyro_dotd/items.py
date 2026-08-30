@@ -53,7 +53,8 @@ ITEM_NAME_TO_ID = {
     "Poison": 39,
     "Fear": 40,
     "Wind": 41,
-    "Shadow": 42
+    "Shadow": 42,
+    "Chain Swinging": 43
 }
 
 # Items should havea defined default classification.
@@ -98,7 +99,8 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     "Poison": ItemClassification.progression,
     "Fear": ItemClassification.progression,
     "Wind": ItemClassification.progression,
-    "Shadow": ItemClassification.progression
+    "Shadow": ItemClassification.progression,
+    "Chain Swinging": ItemClassification.progression
 }
 
 # Each Item instance must correctly report to the "game" it belongs to.
