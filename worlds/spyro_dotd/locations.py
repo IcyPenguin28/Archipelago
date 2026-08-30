@@ -6,6 +6,7 @@ from BaseClasses import ItemClassification, Location
 
 from . import items
 from .items import DotDItem
+from .regions import CATACOMBS_SUBREGION_LOCATIONS, TWILIGHT_FALLS_SUBREGION_LOCATIONS
 
 if TYPE_CHECKING:
     from .world import DotDWorld
@@ -483,22 +484,11 @@ def create_regular_locations(world: DotDWorld) -> None:
         ]
     )
 
+    # Top-level locations should only contain locations that do not
+    # require any additional logic to access beyond having access to the chapter itself
     catacombs_locations = get_location_names_with_ids(
         [
-            "Catacombs Blue Gem - Weight Room",
-            "Catacombs Blue Gem - Waterfall Room Right",
-            "Catacombs Blue Gem - Waterfall Room Pillars 1",
-            "Catacombs Blue Gem - Waterfall Room Pillars 2",
-            "Catacombs Blue Gem - Waterfall Room Top Left",
-            "Catacombs Blue Gem - Waterfall Room Near Breakable Stones",
-            "Catacombs Blue Gem - Waterfall Room Under Right Breakable Stone",
-            "Catacombs Blue Gem - Waterfall Room Under Left Breakable Stone",
-            "Catacombs Blue Gem - Waterfall Room Save Point",
-            "Catacombs Blue Gem - Before Wind Horn",
-            "Catacombs Health Gem",
-            "Catacombs Mana Gem",
-            "Catacombs Elite",
-            "The Catacombs Cleared"
+            # Every location in Catacombs is blocked by at least the first set of vines
         ]
     )
 
@@ -507,18 +497,17 @@ def create_regular_locations(world: DotDWorld) -> None:
             "TF Blue Gem - In Waterfall",
             "TF Blue Gem - Bottom of Waterfall",
             "TF Blue Gem - Near Save Point",
-            "TF Blue Gem - Behind Vines",
             "TF Blue Gem - Before Wind Tunnel",
             "TF Blue Gem - Hero Grublin",
-            "TF Blue Gem - End of Level",
-            "TF Health Gem",
             "TF Mana Gem - Near Crystals",
             "TF Mana Gem - Before Wind Tunnel",
             "TF Armor Chest - Near Elite",
-            "TF Armor Chest - Behind Vines",
             "TF Elite",
             "Objective Complete - Reach the Enchanted Forest",
-            "Twilight Falls Cleared"
+            # "TF Blue Gem - Behind Vines" and "TF Armor Chest - Behind Vines"
+            # now live in TF Beyond Vines.
+            # "TF Health Gem", "TF Blue Gem - End of Level", and
+            # "Twilight Falls Cleared" now live in TF End of Level.
         ]
     )
 
@@ -742,6 +731,10 @@ def create_regular_locations(world: DotDWorld) -> None:
     burned_lands.add_locations(burned_lands_locations, DotDLocation)
     floating_islands.add_locations(floating_islands_locations, DotDLocation)
 
+    # Place sub-region locations using the dicts from regions.py
+    place_subregion_locations(world, CATACOMBS_SUBREGION_LOCATIONS)
+    place_subregion_locations(world, TWILIGHT_FALLS_SUBREGION_LOCATIONS)
+
 
 def create_events(world: DotDWorld) -> None:
     from worlds.generic.Rules import set_rule
@@ -770,3 +763,9 @@ def create_events(world: DotDWorld) -> None:
             lambda state: state.has("Cynder's Fury", player))
     # else: no rule required. Both dragons can automatically build fury
     malefors_lair.locations.append(victory_location)
+
+
+def place_subregion_locations(world: DotDWorld, subregion_map: dict[str, list[str]]) -> None:
+    for region_name, location_names in subregion_map.items():
+        region = world.get_region(region_name)
+        region.add_locations(get_location_names_with_ids(location_names), DotDLocation)

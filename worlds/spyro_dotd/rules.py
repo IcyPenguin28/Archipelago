@@ -35,4 +35,9 @@ def set_location_rules(world: DotDWorld):
              lambda state: state.has("Wind", world.player))
     set_rule(world.get_location("Catacombs Elite"), \
              lambda state: state.has_all(("Shadow", "Wall Climbing"), world.player))
+
+    # Twilight Falls Location Logic
+    set_rule(world.get_location("TF Elite"), \
+             lambda state: state.has("Earth", world.player))
+    
     

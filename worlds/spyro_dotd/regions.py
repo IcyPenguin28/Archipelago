@@ -33,11 +33,25 @@ CATACOMBS_SUBREGION_LOCATIONS = {
     ],
 }
 
+TWILIGHT_FALLS_SUBREGION_LOCATIONS = {
+    "TF Beyond Vines": [
+        "TF Blue Gem - Behind Vines",
+        "TF Armor Chest - Behind Vines"
+    ],
+    "TF End of Level": [
+        "TF Health Gem",
+        "TF Blue Gem - End of Level",
+        "Twilight Falls Cleared"
+    ]
+
+}
+
 def create_and_connect_regions(world: DotDWorld) -> None:
     create_all_regions(world)
     connect_regions(world)
 
     connect_subregions_catacombs(world)
+    connect_subregions_tf(world)
 
 
 def create_all_regions(world: DotDWorld) -> None:
@@ -90,6 +104,7 @@ def connect_regions(world: DotDWorld) -> None:
     # Connect menu to gallery for free just for my own sake
     menu.connect(gallery, "Menu -> Gallery")
 
+    # Make every chapter connect to the menu in a hub & spoke pattern
     for i, region in enumerate(regions[1:], start=1):
         def make_rule(n):
             return lambda state: state.count("Progressive Chapter Unlock", player) >= n
@@ -120,3 +135,22 @@ def connect_subregions_catacombs(world: DotDWorld):
                           rule=lambda state: state.has("Electricity", player))
     waterfall_base.connect(waterfall, "Catacombs Waterfall Base -> Waterfall", \
                            rule=lambda state: state.has("Wall Climbing"))
+
+
+def connect_subregions_tf(world: DotDWorld):
+    """
+        Splits Twilight Falls into sub-regions so individual Twilight Falls locations
+        don't need to restate the same base item requirements redundantly
+        """
+    player = world.player
+    tf = world.get_region("Twilight Falls")
+
+    eol = Region("TF End of Level", player, world.multiworld)
+    beyond_vines = Region("TF Beyond Vines", player, world.multiworld)
+
+    world.multiworld.regions += [beyond_vines, eol]
+
+    tf.connect(eol, "TF Entrance -> End of Level", \
+               rule=lambda state: state.has_all(("Wall Climbing", "Chain Swinging"), player))
+    tf.connect(beyond_vines, "TF Entrance -> Beyond Vines", \
+               rule=lambda state: state.has_any(("Fire", "Poison"), player))
