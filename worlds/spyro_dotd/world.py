@@ -59,6 +59,7 @@ class DotDWorld(World):
 
         self.options.death_link.value = slot_data["death_link"]
         self.options.learn_fury.value = slot_data["learn_fury"]
+        self.options.shuffled_elements.value = slot_data["shuffled_elements"]
         self.options.shuffle_chapter_order.value = slot_data["shuffle_chapter_order"]
         self.chapter_order = [str(x) for x in slot_data["chapter_order"]]
 

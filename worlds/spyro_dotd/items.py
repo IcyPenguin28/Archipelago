@@ -46,14 +46,14 @@ ITEM_NAME_TO_ID = {
     "Dragon's Fury": 32,
     "Spyro's Fury": 33,
     "Cynder's Fury": 34,
-    "Fire": 35,
-    "Electricity": 36,
-    "Ice": 37,
-    "Earth": 38,
-    "Poison": 39,
-    "Fear": 40,
-    "Wind": 41,
-    "Shadow": 42,
+    "Spyro's Fire": 35,
+    "Spyro's Electricity": 36,
+    "Spyro's Ice": 37,
+    "Spyro's Earth": 38,
+    "Cynder's Poison": 39,
+    "Cynder's Fear": 40,
+    "Cynder's Wind": 41,
+    "Cynder's Shadow": 42,
     "Chain Swinging": 43
 }
 
@@ -92,15 +92,26 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     "Dragon's Fury": ItemClassification.progression,
     "Spyro's Fury": ItemClassification.progression,
     "Cynder's Fury": ItemClassification.progression,
-    "Fire": ItemClassification.progression,
-    "Electricity": ItemClassification.progression,
-    "Ice": ItemClassification.progression,
-    "Earth": ItemClassification.progression,
-    "Poison": ItemClassification.progression,
-    "Fear": ItemClassification.progression,
-    "Wind": ItemClassification.progression,
-    "Shadow": ItemClassification.progression,
+    "Spyro's Fire": ItemClassification.progression,
+    "Spyro's Electricity": ItemClassification.progression,
+    "Spyro's Ice": ItemClassification.progression,
+    "Spyro's Earth": ItemClassification.progression,
+    "Cynder's Poison": ItemClassification.progression,
+    "Cynder's Fear": ItemClassification.progression,
+    "Cynder's Wind": ItemClassification.progression,
+    "Cynder's Shadow": ItemClassification.progression,
     "Chain Swinging": ItemClassification.progression
+}
+
+ELEMENT_TO_ITEM_NAME = {
+    "Fire": "Spyro's Fire",
+    "Electricity": "Spyro's Electricity",
+    "Ice": "Spyro's Ice",
+    "Earth": "Spyro's Earth",
+    "Poison": "Cynder's Poison",
+    "Fear": "Cynder's Fear",
+    "Wind": "Cynder's Wind",
+    "Shadow": "Cynder's Shadow",
 }
 
 # Each Item instance must correctly report to the "game" it belongs to.
@@ -203,14 +214,14 @@ def create_all_items(world: DotDWorld) -> None:
         if any(element in world.options.shuffled_elements.value for element in ["Fire", "Electricity", "Ice", "Earth"]):
             if world.options.spyro_elements_handling.current_key == "individual":
                 for element in world.options.shuffled_elements.value.intersection({"Fire", "Electricity", "Ice", "Earth"}):
-                    itempool.append(world.create_item(element))
+                    itempool.append(world.create_item(ELEMENT_TO_ITEM_NAME[element]))
             else:
                 itempool.append(world.create_item("Spyro's Elements"))
         # Handle Cynder Elements
         if any(element in world.options.shuffled_elements.value for element in ["Poison", "Fear", "Wind", "Shadow"]):
             if world.options.cynder_elements_handling.current_key == "individual":
                 for element in world.options.shuffled_elements.value.intersection({"Poison", "Fear", "Wind", "Shadow"}):
-                    itempool.append(world.create_item(element))
+                    itempool.append(world.create_item(ELEMENT_TO_ITEM_NAME[element]))
             else:
                 itempool.append(world.create_item("Cynder's Elements"))
 

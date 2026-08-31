@@ -123,6 +123,17 @@ ELEMENT_NAME_TO_UNLOCKED_ADDRESS = {
     "Shadow": ADDR_SHADOW_UNLOCKED
 }
 
+ITEM_NAME_TO_ELEMENT = {
+    "Spyro's Fire": "Fire",
+    "Spyro's Electricity": "Electricity",
+    "Spyro's Ice": "Ice",
+    "Spyro's Earth": "Earth",
+    "Cynder's Poison": "Poison",
+    "Cynder's Fear": "Fear",
+    "Cynder's Wind": "Wind",
+    "Cynder's Shadow": "Shadow",
+}
+
 # Pointer to class values
 # Every object of a given class has the same pointer value at offset 0x0
 # Note that the class names can't be seen on PS2, but they can on Wii by following the pointer chain at offset 0x0
@@ -495,9 +506,9 @@ class DotDContext(CommonContext):
                 self._learned_elements.add("Fear")
                 self._learned_elements.add("Wind")
                 self._learned_elements.add("Shadow")
-        elif item_name in ALL_ELEMENTS_SET:
+        elif item_name in ITEM_NAME_TO_ELEMENT:
             # Item is an individual element
-            self._learned_elements.add(item_name)
+            self._learned_elements.add(ITEM_NAME_TO_ELEMENT[item_name])
 
         # Instant consumables (Small Health Gem / Small Mana Gem) are handled inside
         # handle_receive_item because they are meant to be applied once per

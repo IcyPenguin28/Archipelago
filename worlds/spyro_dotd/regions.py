@@ -44,6 +44,17 @@ TWILIGHT_FALLS_SUBREGION_LOCATIONS = {
         "Twilight Falls Cleared",
         "Objective Complete - Reach the Enchanted Forest"
     ]
+}
+
+VALLEY_OF_AVALAR_SUBREGION_LOCATIONS = {
+    "VoA Elite Cliff": [
+        "VoA Blue Gem - Near Elite",
+        "VoA Elite",
+        "VoA Health Gem - Near Elite"
+    ],
+    "VoA Hermit Cave - Beyond Wind": [
+        
+    ]
 
 }
 
@@ -131,9 +142,9 @@ def connect_subregions_catacombs(world: DotDWorld):
     world.multiworld.regions += [beyond_vines, waterfall_base, waterfall]
 
     catacombs.connect(beyond_vines, "Catacombs Entrance -> Beyond Vines", \
-                      rule=lambda state: state.has_any(("Fire", "Poison"), player))
+                      rule=lambda state: state.has_any(("Spyro's Fire", "Cynder's Poison"), player))
     beyond_vines.connect(waterfall_base, "Catacombs Beyond Vines -> Waterfall Base", \
-                          rule=lambda state: state.has("Electricity", player))
+                          rule=lambda state: state.has("Spyro's Electricity", player))
     waterfall_base.connect(waterfall, "Catacombs Waterfall Base -> Waterfall", \
                            rule=lambda state: state.has("Wall Climbing"))
 
@@ -154,4 +165,4 @@ def connect_subregions_tf(world: DotDWorld):
     tf.connect(eol, "TF Entrance -> End of Level", \
                rule=lambda state: state.has_all(("Wall Climbing", "Chain Swinging"), player))
     tf.connect(beyond_vines, "TF Entrance -> Beyond Vines", \
-               rule=lambda state: state.has_any(("Fire", "Poison"), player))
+               rule=lambda state: state.has_any(("Spyro's Fire", "Poison"), player))
