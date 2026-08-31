@@ -13,22 +13,22 @@ SHUFFLEABLE_CHAPTERS = [
 CATACOMBS_SUBREGION_LOCATIONS = {
     "Catacombs Beyond Vines": [
         "Catacombs Blue Gem - Weight Room",
+        "Catacombs Health Gem"
     ],
     "Catacombs Waterfall Base": [
-        "Catacombs Blue Gem - Waterfall Room Under Right Breakable Stone",
-        "Catacombs Blue Gem - Waterfall Room Under Left Breakable Stone",
         "Catacombs Blue Gem - Waterfall Room Right",
         "Catacombs Blue Gem - Waterfall Room Near Breakable Stones",
-        "Catacombs Health Gem",
-        "Catacombs Mana Gem",
-        "Catacombs Elite"
+        "Catacombs Mana Gem"
     ],
     "Catacombs Waterfall": [
+        "Catacombs Blue Gem - Waterfall Room Under Right Breakable Stone",
+        "Catacombs Blue Gem - Waterfall Room Under Left Breakable Stone",
         "Catacombs Blue Gem - Waterfall Room Pillars 2",
         "Catacombs Blue Gem - Waterfall Room Top Left",
         "Catacombs Blue Gem - Waterfall Room Pillars 1",
         "Catacombs Blue Gem - Waterfall Room Save Point",
         "Catacombs Blue Gem - Before Wind Horn",
+        "Catacombs Elite",
         "The Catacombs Cleared"
     ],
 }
