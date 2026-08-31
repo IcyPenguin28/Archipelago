@@ -6,7 +6,8 @@ from BaseClasses import ItemClassification, Location
 
 from . import items
 from .items import DotDItem
-from .regions import CATACOMBS_SUBREGION_LOCATIONS, TWILIGHT_FALLS_SUBREGION_LOCATIONS
+from .regions import CATACOMBS_SUBREGION_LOCATIONS, TWILIGHT_FALLS_SUBREGION_LOCATIONS, \
+    VALLEY_OF_AVALAR_SUBREGION_LOCATIONS
 
 if TYPE_CHECKING:
     from .world import DotDWorld
@@ -484,7 +485,7 @@ def create_regular_locations(world: DotDWorld) -> None:
         ]
     )
 
-    # Top-level locations should only contain locations that do not
+    # NOTE: Top-level locations should only contain locations that do not
     # require any additional logic to access beyond having access to the chapter itself
     catacombs_locations = get_location_names_with_ids(
         [
@@ -514,43 +515,8 @@ def create_regular_locations(world: DotDWorld) -> None:
 
     valley_of_avalar_locations = get_location_names_with_ids(
         [
-            "VoA Blue Gem - Cheetah Village",
-            "VoA Blue Gem - Near Meadow Cave",
-            "VoA Blue Gem - Above Meadow Cave",
-            "VoA Blue Gem - Near Cheetah Village",
-            "VoA Blue Gem - Near Elite",
-            "VoA Blue Gem - Under Platform Near Island",
-            "VoA Blue Gem - On Top of Platform Near Island",
-            "VoA Blue Gem - Island",
-            "VoA Blue Gem - Right of Big Waterfall",
-            "VoA Blue Gem - Left of Big Waterfall",
-            "VoA Blue Gem - Near Supply Cave",
-            "VoA Blue Gem - Behind Supply Cave",
-            "VoA Blue Gem - Near Raft",
-            "VoA Blue Gem - Above Passageway",
-            "VoA Blue Gem - Near Passageway Right",
-            "VoA Blue Gem - Between Passageway and Hidden Area",
-            "VoA Blue Gem - Hidden Area",
-            "VoA Blue Gem - Hermit Area Tunnels",
-            "VoA Blue Gem - Near Hermit",
-            "VoA Health Gem - Big Oak",
-            "VoA Health Gem - Near Elite",
-            "VoA Health Gem - Hermit Area Tunnels",
-            "VoA Mana Gem - Island",
-            "VoA Mana Gem - Near Hermit",
-            "VoA Mana Gem - Behind Gate",
-            "VoA Armor Chest - Above Meadow Cave",
-            "VoA Armor Chest - Meadow",
-            "VoA Armor Chest - Big Waterfall",
-            "VoA Armor Chest - Hermit",
-            "VoA Elite",
-            "Objective Complete - Save the Cheetah Village",
-            "Objective Complete - Find Meadow",
-            "Objective Complete - Find the Hermit",
-            "Objective Complete - Find the Supply Cave",
-            "Objective Complete - Find the Raft",
-            "Objective Complete - Bring the Raft to Meadow",
-            "Valley of Avalar Cleared"
+            "Objective Complete - Save the Cheetah Village"
+            # All other locations handled by subregions, as you cannot leave the Cheetah Village until it is saved
         ]
     )
 
@@ -735,6 +701,7 @@ def create_regular_locations(world: DotDWorld) -> None:
     # Place sub-region locations using the dicts from regions.py
     place_subregion_locations(world, CATACOMBS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, TWILIGHT_FALLS_SUBREGION_LOCATIONS)
+    place_subregion_locations(world, VALLEY_OF_AVALAR_SUBREGION_LOCATIONS)
 
 
 def create_events(world: DotDWorld) -> None:

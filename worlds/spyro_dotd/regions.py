@@ -47,13 +47,55 @@ TWILIGHT_FALLS_SUBREGION_LOCATIONS = {
 }
 
 VALLEY_OF_AVALAR_SUBREGION_LOCATIONS = {
+    "VoA Post-Village": [   # All locations reachable after saving the village without any other abilities
+        "VoA Blue Gem - Near Passageway Right",
+        "VoA Blue Gem - Island",
+        "VoA Blue Gem - Hidden Area",
+        "VoA Blue Gem - Above Passageway",
+        "VoA Blue Gem - Near Meadow Cave",
+        "VoA Blue Gem - Cheetah Village",
+        "VoA Blue Gem - Between Passageway and Hidden Area"
+        "VoA Blue Gem - On Top of Platform Near Island",
+        "VoA Blue Gem - Right of Big Waterfall",
+        "VoA Blue Gem - Near Raft",
+        "VoA Blue Gem - Behind Supply Cave",
+        "VoA Blue Gem - Near Cheetah Village",
+        "VoA Blue Gem - Under Platform Near Island",
+        "VoA Blue Gem - Left of Big Waterfall",
+        "VoA Blue Gem - Near Supply Cave",
+        "VoA Health Gem - Big Oak",
+        "VoA Mana Gem - Island",
+        "VoA Armor Chest - Big Waterfall"
+    ],
     "VoA Elite Cliff": [
         "VoA Blue Gem - Near Elite",
         "VoA Elite",
-        "VoA Health Gem - Near Elite"
+        "VoA Health Gem - Near Elite",
     ],
-    "VoA Hermit Cave - Beyond Wind": [
-        
+    "VoA Above Meadow Cave": [
+        "VoA Blue Gem - Above Meadow Cave",
+        "VoA Armor Chest - Above Meadow Cave"
+    ],
+    "VoA Meadow Cave": [
+        "Objective Complete - Find Meadow",
+        "VoA Armor Chest - Meadow"
+    ],
+    "VoA Hermit Cave": [
+        "VoA Blue Gem - Hermit Area Tunnels",
+        "VoA Health Gem - Hermit Area Tunnels",
+    ],
+    "VoA Hermit Cave Beyond Wind": [
+        "VoA Blue Gem - Near Hermit"
+        "VoA Armor Chest - Hermit",
+        "VoA Mana Gem - Near Hermit",
+        "Objective Complete - Find the Hermit"
+    ],
+    "VoA Post-Hermit": [
+        "VoA Mana Gem - Behind Gate"
+        "Valley of Avalar Cleared",
+        "Objective Complete - Find the Supply Cave",
+        "Objective Complete - Find the Raft",
+        "Objective Complete - Bring the Raft to Meadow",
     ]
 
 }
@@ -151,9 +193,9 @@ def connect_subregions_catacombs(world: DotDWorld):
 
 def connect_subregions_tf(world: DotDWorld):
     """
-        Splits Twilight Falls into sub-regions so individual Twilight Falls locations
-        don't need to restate the same base item requirements redundantly
-        """
+    Splits Twilight Falls into sub-regions so individual Twilight Falls locations
+    don't need to restate the same base item requirements redundantly
+    """
     player = world.player
     tf = world.get_region("Twilight Falls")
 
@@ -166,3 +208,36 @@ def connect_subregions_tf(world: DotDWorld):
                rule=lambda state: state.has_all(("Wall Climbing", "Chain Swinging"), player))
     tf.connect(beyond_vines, "TF Entrance -> Beyond Vines", \
                rule=lambda state: state.has_any(("Spyro's Fire", "Poison"), player))
+
+
+def connect_subregions_voa(world: DotDWorld):
+    """
+    Splits Twilight Falls into sub-regions so individual Twilight Falls locations
+    don't need to restate the same base item requirements redundantly
+    """
+    player = world.player
+    voa = world.get_region("Valley of Avalar")
+
+    post_village = Region("VoA Post-Village", player, world.multiworld)
+    above_meadow_cave = Region("VoA Above Meadow Cave", player, world.multiworld)
+    meadow_cave = Region("Voa Meadow Cave", player, world.multiworld)
+    elite_cliff = Region("VoA Elite Cliff", player, world.multiworld)
+    hermit_cave = Region("VoA Hermit Cave", player, world.multiworld)
+    hermit_cave_beyond_wind = Region("VoA Hermit Cave Beyond Wind", player, world.multiworld)
+    post_hermit = Region("VoA Post-Hermit", player, world.multiworld)
+
+    voa.connect(post_village, "VoA Entrance -> Post-Village", \
+                rule=lambda state: state.can_reach_location("Objective Complete - Save the Cheetah Village", player))
+    post_village.connect(above_meadow_cave, "VoA Post-Village -> Above Meadow Cave", \
+                rule=lambda state: state.has("Wall Climbing", player))
+    post_village.connect(meadow_cave, "VoA Post-Village -> Meadow Cave")
+    # NOTE: You can get to the top of the elite cliff just with flight, so a setting may be in order.
+    post_village.connect(elite_cliff, "VoA Post-Village -> Elite Cliff", \
+                rule=lambda state: state.has_all(("Wall Climbing", "Wall Running"), player))
+    post_village.connect(hermit_cave, "VoA Post-Village -> Hermit Cave", \
+                rule=lambda state: state.can_reach_location("Objective Complete - Find Meadow", player))
+    hermit_cave.connect(hermit_cave_beyond_wind, "VoA Hermit Cave -> Hermit Cave Beyond Wind", \
+                rule=lambda state: state.has_all(("Wall Climbing", "Wall Running"), player))
+    hermit_cave_beyond_wind.connect(post_hermit, "VoA Hermit Cave Beyond Wind-> Post-Hermit", \
+                rule=lambda state: state.can_reach_location("Objective Complete - Find the Hermit", player))
+    

@@ -39,5 +39,13 @@ def set_location_rules(world: DotDWorld):
     # Twilight Falls Location Logic
     set_rule(world.get_location("TF Elite"), \
              lambda state: state.has("Spyro's Earth", world.player))
+
+    # Valley of Avalar Location Logic
+    set_rule(world.get_location("VoA Elite"), \
+             lambda state: state.has_all(("Spyro's Electricity", "Cynder's Fear"), world.player))
+    set_rule(world.get_location("VoA Mana Gem - Behind Gate"), \
+             lambda state: state.can_reach_location("Objective Complete - Find the Supply Cave", world.player))
+    set_rule(world.get_location("VoA Armor Chest - Big Waterfall"), \
+             lambda state: state.has("Wall Climbing", world.player))
     
     
