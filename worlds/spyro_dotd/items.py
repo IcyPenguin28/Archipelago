@@ -36,25 +36,23 @@ ITEM_NAME_TO_ID = {
     "Cynder Bracers Fury": 22,
     "Small Health Gem": 23, # This is the small gem that the player can pick up to recover their HP
     "Small Mana Gem": 24,   # Likewise, but for Mana
-    "Dragons' Flight": 25,    # NOTE: Deprecated. We will no longer be gating flight.
-    "Dragons' Elements": 26,  # NOTE: Deprecated. Elements are now handled per dragon or individually.
-    "Spyro's Elements": 27,
-    "Cynder's Elements": 28,
-    "Wall Climbing": 29,
-    "Wall Running": 30,
-    "Progressive Chapter Unlock": 31,
-    "Dragon's Fury": 32,
-    "Spyro's Fury": 33,
-    "Cynder's Fury": 34,
-    "Spyro's Fire": 35,
-    "Spyro's Electricity": 36,
-    "Spyro's Ice": 37,
-    "Spyro's Earth": 38,
-    "Cynder's Poison": 39,
-    "Cynder's Fear": 40,
-    "Cynder's Wind": 41,
-    "Cynder's Shadow": 42,
-    "Chain Swinging": 43
+    "Spyro's Elements": 25,
+    "Cynder's Elements": 26,
+    "Wall Climbing": 27,
+    "Wall Running": 28,
+    "Progressive Chapter Unlock": 29,
+    "Dragon's Fury": 30,
+    "Spyro's Fury": 31,
+    "Cynder's Fury": 32,
+    "Spyro's Fire": 33,
+    "Spyro's Electricity": 34,
+    "Spyro's Ice": 35,
+    "Spyro's Earth": 36,
+    "Cynder's Poison": 37,
+    "Cynder's Fear": 38,
+    "Cynder's Wind": 39,
+    "Cynder's Shadow": 40,
+    "Chain Swinging": 41
 }
 
 # Items should havea defined default classification.
@@ -84,8 +82,6 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     "Cynder Bracers Fury": ItemClassification.useful,
     "Small Health Gem": ItemClassification.filler,
     "Small Mana Gem": ItemClassification.filler,
-    "Dragons' Flight": ItemClassification.progression,      # NOTE: Deprecated. We will no longer be gating flight.
-    "Dragons' Elements": ItemClassification.progression,    # NOTE: Deprecated. Elements are now handled per dragon or individually.
     "Spyro's Elements": ItemClassification.progression,
     "Cynder's Elements": ItemClassification.progression,
     "Progressive Chapter Unlock": ItemClassification.progression,
@@ -188,15 +184,6 @@ def create_all_items(world: DotDWorld) -> None:
     #     itempool.append(world.create_item("Wall Climbing"))
     # if world.options.learn_to_wall_run:
     #     itempool.append(world.create_item("Wall Running"))
-    # if world.options.learn_to_breathe.current_key == "both_together":
-    #     itempool.append(world.create_item("Dragons' Elements"))
-    # elif world.options.learn_to_breathe.current_key == "both_separate":
-    #     itempool.append(world.create_item("Spyro's Elements"))
-    #     itempool.append(world.create_item("Cynder's Elements"))
-    # elif world.options.learn_to_breathe.current_key == "spyro":
-    #     itempool.append(world.create_item("Spyro's Elements"))
-    # elif world.options.learn_to_breathe.current_key == "cynder":
-    #     itempool.append(world.create_item("Cynder's Elements"))
     if world.options.learn_fury.current_key == "both_together":
         itempool.append(world.create_item("Dragon's Fury"))
     elif world.options.learn_fury.current_key == "both_separate":

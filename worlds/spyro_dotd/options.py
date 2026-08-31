@@ -16,22 +16,6 @@ from Options import Choice, OptionGroup, PerGameCommonOptions, DeathLinkMixin, R
 # A toggle is an option that can either be on or off. This will be represented by a checkbox on the website.
 # The default for a toggle is "off".
 # If you want a toggle to be on by default, you can use the "DefaultOnToggle" class instead of teh "Toggle" class.
-class DisableCheatCodes(DefaultOnToggle):
-    """
-    Disable the ability to make use of in-game cheat codes for things like
-    infinite health, infinite mana, infinite exp, or infinite fury
-    """
-    display_name = "Disable In-Game Cheat Codes"
-
-
-class LearnToFly(Toggle):
-    """
-    Neither dragon can fly until it is enabled via the "Dragons' Flight" item.
-    This does not disable flight that would otherwise be required to stop from falling into bottomless pits.
-    WARNING: There is a chance to softlock yourself if you fall somewhere that cannot fly out of.
-    """
-    display_name = "Learn to Fly"
-
 
 class LearnToClimb(Toggle):
     """
@@ -45,31 +29,6 @@ class LearnToWallRun(Toggle):
     Neither dragon can run on walls until it is enabled via the "Wall Running" item.
     """
     display_name = "Learn to Wall Run"
-
-
-class LearnToBreathe(Choice):
-    """
-    One or both dragons cannot use mana until it is enabled via an item.
-    
-    Disabled: Both dragons can replenish their mana (vanilla behavior).
-
-    Spyro: Spyro will always have 0 mana until the "Spyro's Elements" item is obtained. Cynder remains unaffected.
-
-    Cynder: Cynder will always have 0 mana until the "Cynder's Elements" item is obtained. Spyro remains unaffected.
-
-    Both Together: Both dragons will always have 0 mana until the "Dragons' Elements" item is obtained.
-
-    Both Separate: Both dragons will always have 0 mana and can re-obtain them separately with the "Spyro's Elements" and "Cynder's Elements" items.
-    """
-    display_name = "Learn to Breathe"
-
-    option_disabled = 0
-    option_spyro = 1
-    option_cynder = 2
-    option_both_together = 3
-    option_both_separate = 4
-
-    default = option_disabled
 
 
 class ShuffleChapterOrder(Toggle):
@@ -154,11 +113,8 @@ class LearnFury(Choice):
 # This is in the format "option_name_in_snake_case: OptionClassName"
 @dataclass
 class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
-    # disable_cheat_codes: DisableCheatCodes
-    # learn_to_fly: LearnToFly
     # learn_to_climb: LearnToClimb
     # learn_to_wall_run: LearnToWallRun
-    # learn_to_breathe: LearnToBreathe
     shuffle_chapter_order: ShuffleChapterOrder
     shuffled_elements: ShuffledElements
     spyro_elements_handling: SpyroElementsHandling
