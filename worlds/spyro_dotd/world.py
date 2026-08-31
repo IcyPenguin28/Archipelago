@@ -99,11 +99,8 @@ class DotDWorld(World):
         # If you need access to the player's chosen options on the client side, there is a helper for that.
         slot_data = self.options.as_dict(
             "death_link",
-            # "disable_cheat_codes",
-            # "learn_to_fly",
             # "learn_to_climb",
             # "learn_to_wallrun",
-            # "learn_to_breathe"
             "shuffle_chapter_order",
             "shuffled_elements",
             "spyro_elements_handling",
