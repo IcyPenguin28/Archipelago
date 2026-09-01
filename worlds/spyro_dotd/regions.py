@@ -97,7 +97,40 @@ VALLEY_OF_AVALAR_SUBREGION_LOCATIONS = {
         "Objective Complete - Find the Raft",
         "Objective Complete - Bring the Raft to Meadow",
     ]
+}
 
+RUINS_OF_WARFANG_SUBREGION_LOCATIONS = {
+    "RoW Lower Left Trap Road": [
+        "RoW Blue Gem - Left Path Near Trap",
+        "RoW Blue Gem - Left Path Near Wallrun"
+    ],
+    "RoW Upper Right": [
+        "RoW Blue Gem - Up Right Path Near Key",
+        "RoW Health Gem - Up Right Path Near Key",
+        "RoW Mana Gem - Up Right Path After Falling Stones",
+        "RoW Armor Chest - Up Right Path Under Earth Slab",
+    ],
+    "RoW Upper Left": [
+        "RoW Mana Gem - Up Left Path Behind Shadow Gate",
+        "RoW Health Gem - Left Path Trap"
+    ],
+    "RoW End of Level": [
+        "Objective Complete - Open the Gates to the Ruins of Warfang",
+        "Ruins of Warfang Cleared"
+    ]
+}
+
+FLOATING_ISLANDS_SUBREGION_LOCATIONS = {
+    "FI Beyond Torch Door": [
+        "FI Blue Gem - Troll Island Top",
+        "FI Blue Gem - Hero Grublin Elite Island Middle",
+        "FI Blue Gem - Hero Grublin Elite Island Top",
+        "FI Blue Gem - Troll Island Left",
+        "FI Health Gem - Hero Grublin Elite Island",
+        "FI Elite - Wyvern",
+        "FI Elite - Hero Grublin",
+        "Floating Islands Cleared"
+    ]
 }
 
 def create_and_connect_regions(world: DotDWorld) -> None:
@@ -207,12 +240,12 @@ def connect_subregions_tf(world: DotDWorld):
     tf.connect(eol, "TF Entrance -> End of Level", \
                rule=lambda state: state.has_all(("Wall Climbing", "Chain Swinging"), player))
     tf.connect(beyond_vines, "TF Entrance -> Beyond Vines", \
-               rule=lambda state: state.has_any(("Spyro's Fire", "Poison"), player))
+               rule=lambda state: state.has_any(("Spyro's Fire", "Cynder's Poison"), player))
 
 
 def connect_subregions_voa(world: DotDWorld):
     """
-    Splits Twilight Falls into sub-regions so individual Twilight Falls locations
+    Splits Valley of Avalar into sub-regions so individual Valley of Avalar locations
     don't need to restate the same base item requirements redundantly
     """
     player = world.player
@@ -242,6 +275,48 @@ def connect_subregions_voa(world: DotDWorld):
                 rule=lambda state: state.can_reach_location("Objective Complete - Find the Hermit", player))
 
 def connect_subregions_aotg(world: DotDWorld):
+    """
+    Splits Attack of the Golem into sub-regions so individual Attack of the Golem locations
+    don't need to restate the same base item requirements redundantly
+    """
     # LMFAO, AotG moment xD
     pass
-    
+
+
+def connect_subregions_row(world: DotDWorld):
+    """
+    Splits Ruins of Warfang into sub-regions so individual Ruins of Warfang locations
+    don't need to restate the same base item requirements redundantly
+    """
+    player = world.player
+    row = world.get_region("Ruins of Warfang")
+
+    trap_road = Region("RoW Lower Left Trap Road", player, world.multiworld)
+    upper_right = Region("Row Upper Right", player, world.multiworld)
+    upper_left = Region("RoW Upper Left", player, world.multiworld)
+    eol = Region("Row End of Level", player, world.multiworld)
+
+    row.connect(trap_road, "RoW Entrance -> Trap Road", \
+                rule=lambda state: state.has("Wall Climbing", player))
+    row.connect(upper_right, "RoW Entrance -> Upper Right", \
+                rule=lambda state: state.has_all(("Cynder's Fear", "Wall Climbing", "Spyro's Earth", "Chain Swinging", "Wall Running"), player))
+    row.connect(upper_left, "RoW Entrance -> Upper Left", \
+                rule=lambda state: state.has_all(("Spyro's Fire", "Cynder's Shadow", "Wall Climbing", "Chain Swinging"), player))
+    row.connect(eol, "Row Entrance -> End of Level", \
+                rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Fear", "Spyro's Electricity", "Cynder's Shadow", "Spyro's Fire", "Chain Swinging", "Spyro's Earth", "Wall Running"), player))
+
+
+def connect_subregions_fi(world: DotDWorld):
+    """
+    Splits Floating Islands into sub-regions so individual Floating Islands locations
+    don't need to restate the same base item requirements redundantly
+    """
+    player = world.player
+    fi = world.get_region("Floating Islands")
+
+    beyond_torch_door = Region("FI Beyond Torch Door", player, world.multiworld)
+
+    fi.connect(beyond_torch_door, "FI Entrance -> Beyond Torch Door", \
+               rule=lambda state: state.can_reach_location("Objective Complete - 8/8 Torches Lit", player))
+
+

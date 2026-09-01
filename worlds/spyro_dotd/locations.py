@@ -7,7 +7,8 @@ from BaseClasses import ItemClassification, Location
 from . import items
 from .items import DotDItem
 from .regions import CATACOMBS_SUBREGION_LOCATIONS, TWILIGHT_FALLS_SUBREGION_LOCATIONS, \
-    VALLEY_OF_AVALAR_SUBREGION_LOCATIONS
+    VALLEY_OF_AVALAR_SUBREGION_LOCATIONS, RUINS_OF_WARFANG_SUBREGION_LOCATIONS, \
+    FLOATING_ISLANDS_SUBREGION_LOCATIONS
 
 if TYPE_CHECKING:
     from .world import DotDWorld
@@ -569,24 +570,15 @@ def create_regular_locations(world: DotDWorld) -> None:
             "RoW Blue Gem - Right Path Between Malefor Mural and Lever",
             "RoW Blue Gem - Right Path Near Lever",
             "RoW Blue Gem - Right Path Near Tuning Forks",
-            "RoW Blue Gem - Up Right Path Near Key",
             "RoW Blue Gem - Left Path Small Pillar",
             "RoW Blue Gem - Left Path Long Platform",
             "RoW Blue Gem - Left Path Round Platform",
-            "RoW Blue Gem - Left Path Near Wallrun",
-            "RoW Blue Gem - Left Path Near Trap",
             "RoW Blue Gem - Left Path Platform Under Trap",
             "RoW Health Gem - Right Path Behind Vines",
-            "RoW Health Gem - Up Right Path Near Key",
-            "RoW Health Gem - Left Path Trap",
-            "RoW Mana Gem - Up Right Path After Falling Stones",
             "RoW Mana Gem - Left Path Behind Vines",
-            "RoW Mana Gem - Up Left Path Behind Shadow Gate",
             "RoW Armor Chest - Up Right Path Under Earth Slab",
             "RoW Armor Chest - Left Path Near Key",
-            "RoW Elite",
-            "Objective Complete - Open the Gates to the Ruins of Warfang",
-            "Ruins of Warfang Cleared"
+            "RoW Elite"
         ]
     )
 
@@ -672,17 +664,8 @@ def create_regular_locations(world: DotDWorld) -> None:
             "FI Blue Gem - Lower Save Point Island",
             "FI Blue Gem - Wyvern Elite Island",
             "FI Blue Gem - Small Island Behind Wyvern Elite",
-            "FI Blue Gem - Troll Island Left",
-            "FI Blue Gem - Troll Island Top",
-            "FI Blue Gem - Hero Grublin Elite Island Top",
-            "FI Blue Gem - Hero Grublin Elite Island Middle",
             "FI Health Gem - Big Bonus Island",
-            "FI Health Gem - Hero Grublin Elite Island",
-            "FI Mana Gem",
-            "FI Elite - Wyvern",
-            "FI Elite - Hero Grublin",
-            "Objective Complete - Torches Lit 8/8",
-            "Floating Islands Cleared"
+            "FI Mana Gem"
         ]
     )
 
@@ -702,6 +685,8 @@ def create_regular_locations(world: DotDWorld) -> None:
     place_subregion_locations(world, CATACOMBS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, TWILIGHT_FALLS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, VALLEY_OF_AVALAR_SUBREGION_LOCATIONS)
+    place_subregion_locations(world, RUINS_OF_WARFANG_SUBREGION_LOCATIONS)
+    place_subregion_locations(world, FLOATING_ISLANDS_SUBREGION_LOCATIONS)
 
 
 def create_events(world: DotDWorld) -> None:

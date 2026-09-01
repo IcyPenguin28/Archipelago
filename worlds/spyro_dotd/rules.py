@@ -53,4 +53,25 @@ def set_location_rules(world: DotDWorld):
     # Attack of the Golem Location Logic
     set_rule(world.get_location("Attack of the Golem Cleared"), \
              lambda state: state.has("Wall Climbing", world.player))
+
+    # Ruins of Warfang Location Logic
+    set_rule(world.get_location("RoW Health Gem - Right Path Behind Vines"), \
+             lambda state: state.has_any(("Spyro's Fire", "Cynder's Poison"), world.player))
+    set_rule(world.get_location("RoW Mana Gem - Left Path Behind Vines"), \
+             lambda state: state.has("Wall Climbing", world.player) and state.has_any(("Spyro's Fire", "Cynder's Poison"), world.player))
+    set_rule(world.get_location("RoW Armor Chest - Up Right Path Under Earth Slab"), \
+                 lambda state: state.has_any(("Spyro's Fire", "Cynder's Poison"), world.player))
+    # Earliest can appear is after completion of lower left or lower right.
+    # Lower left requires Fire, Swing, and Climb. Lower right requires Fear and climb. Elite mask itself can either be Fire, Ice, or Poison.
+    # The logic below is that but simplified.
+    set_rule(world.get_location("RoW Elite"), \
+             lambda state: state.has_all(("Spyro's Fire", "Spyro's Ice", "Cynder's Poison", "Wall Climbing"), world.player) and state.has_any(("Chain Swinging", "Cynder's Fear"), world.player))
+
+    # Floating Islands Location Logic
+    set_rule(world.get_location("Objective Complete - Torches Lit 8/8"), \
+             lambda state: state.has("Spyro's Fire", world.player))
+    set_rule(world.get_location("FI Elite - Wyvern"), \
+             lambda state: state.has_all(("Spyro's Ice", "Cynder's Wind"), world.player))
+    set_rule(world.get_location("FI Elite - Hero Grublin"), \
+             lambda state: state.has_all(("Spyro's Fire", "Cynder's Shadow"), world.player))
     
