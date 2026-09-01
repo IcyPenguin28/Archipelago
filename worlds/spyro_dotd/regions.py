@@ -240,4 +240,8 @@ def connect_subregions_voa(world: DotDWorld):
                 rule=lambda state: state.has_all(("Wall Climbing", "Wall Running"), player))
     hermit_cave_beyond_wind.connect(post_hermit, "VoA Hermit Cave Beyond Wind-> Post-Hermit", \
                 rule=lambda state: state.can_reach_location("Objective Complete - Find the Hermit", player))
+
+def connect_subregions_aotg(world: DotDWorld):
+    # LMFAO, AotG moment xD
+    pass
     

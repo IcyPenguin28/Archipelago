@@ -47,5 +47,10 @@ def set_location_rules(world: DotDWorld):
              lambda state: state.can_reach_location("Objective Complete - Find the Supply Cave", world.player))
     set_rule(world.get_location("VoA Armor Chest - Big Waterfall"), \
              lambda state: state.has("Wall Climbing", world.player))
-    
+
+    # Dragon City Location Logic
+
+    # Attack of the Golem Location Logic
+    set_rule(world.get_location("Attack of the Golem Cleared"), \
+             lambda state: state.has("Wall Climbing", world.player))
     
