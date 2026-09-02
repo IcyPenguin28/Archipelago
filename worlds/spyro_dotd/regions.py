@@ -217,8 +217,11 @@ def create_and_connect_regions(world: DotDWorld) -> None:
     connect_subregions_catacombs(world)
     connect_subregions_tf(world)
     connect_subregions_voa(world)
+    connect_subregions_dc(world)
     connect_subregions_aotg(world)
     connect_subregions_row(world)
+    connect_subregions_dam(world)
+    connect_subregions_destroyer(world)
     connect_subregions_bl(world)
     connect_subregions_fi(world)
 
