@@ -120,6 +120,20 @@ RUINS_OF_WARFANG_SUBREGION_LOCATIONS = {
     ]
 }
 
+BURNED_LANDS_SUBREGION_LOCATIONS = {
+    "BL Beyond Climbing Wall": [
+        "BL Blue Gem - Bridge Before Last Ring Right",
+        "BL Blue Gem - Last Ring Area Far Right",
+        "BL Blue Gem - Last Ring Area Far Left",
+        "BL Blue Gem - After Last Ring Left",
+        "BL Blue Gem - Bridge Before Last Ring Left",
+        "BL Blue Gem - After Last Ring Right",
+        "BL Mana Gem - Under Bridge",
+        "Objective Complete - Reach the Volcano",
+        "Burned Lands Cleared"
+    ]
+}
+
 FLOATING_ISLANDS_SUBREGION_LOCATIONS = {
     "FI Beyond Torch Door": [
         "FI Blue Gem - Troll Island Top",
@@ -137,11 +151,15 @@ def create_and_connect_regions(world: DotDWorld) -> None:
     create_all_regions(world)
     connect_regions(world)
 
+    # Connect subregions
+    # Yes, comments shouldn't state the obvious...
+    # but I have trouble finding this block of code and this comment helps
     connect_subregions_catacombs(world)
     connect_subregions_tf(world)
     connect_subregions_voa(world)
     connect_subregions_aotg(world)
     connect_subregions_row(world)
+    connect_subregions_bl(world)
     connect_subregions_fi(world)
 
 
@@ -308,6 +326,20 @@ def connect_subregions_row(world: DotDWorld):
                 rule=lambda state: state.has_all(("Spyro's Fire", "Cynder's Shadow", "Wall Climbing", "Chain Swinging"), player))
     row.connect(eol, "Row Entrance -> End of Level", \
                 rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Fear", "Spyro's Electricity", "Cynder's Shadow", "Spyro's Fire", "Chain Swinging", "Spyro's Earth", "Wall Running"), player))
+
+
+def connect_subregions_bl(world: DotDWorld):
+    """
+    Splits Burned Lands into sub-regions so individual Burned Lands locations
+    don't need to restate the same base item requirements redundantly
+    """
+    player = world.player
+    bl = world.get_region("Burned Lands")
+
+    beyond_climbing_wall = Region("BL Beyond Climbing Wall", player, world.multiworld)
+
+    bl.connect(beyond_climbing_wall, "BL Entrance -> Beyond Climbing Wall", \
+               rule=lambda state: state.has("Wall Climbing", player))
 
 
 def connect_subregions_fi(world: DotDWorld):

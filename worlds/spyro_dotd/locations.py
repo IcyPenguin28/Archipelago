@@ -8,7 +8,7 @@ from . import items
 from .items import DotDItem
 from .regions import CATACOMBS_SUBREGION_LOCATIONS, TWILIGHT_FALLS_SUBREGION_LOCATIONS, \
     VALLEY_OF_AVALAR_SUBREGION_LOCATIONS, RUINS_OF_WARFANG_SUBREGION_LOCATIONS, \
-    FLOATING_ISLANDS_SUBREGION_LOCATIONS
+    BURNED_LANDS_SUBREGION_LOCATIONS, FLOATING_ISLANDS_SUBREGION_LOCATIONS
 
 if TYPE_CHECKING:
     from .world import DotDWorld
@@ -629,22 +629,13 @@ def create_regular_locations(world: DotDWorld) -> None:
             "BL Blue Gem - Before Third Ring Middle",
             "BL Blue Gem - Before Third Ring Right",
             "BL Blue Gem - After Third Ring",
-            "BL Blue Gem - Bridge Before Last Ring Right",
-            "BL Blue Gem - Bridge Before Last Ring Left",
-            "BL Blue Gem - Last Ring Area Far Left",
-            "BL Blue Gem - Last Ring Area Far Right",
-            "BL Blue Gem - After Last Ring Left",
-            "BL Blue Gem - After Last Ring Right",
             "BL Health Gem - Before Third Ring",
             "BL Health Gem - Elite",
             "BL Mana Gem - Hero Orc",
             "BL Mana Gem - Under Last Ring Area",
-            "BL Mana Gem - Under Bridge",
             "BL Armor Chest - Orcs",
             "BL Armor Chest - Behind Dark Crystal",
-            "BL Elite",
-            "Objective Complete - Reach the Volcano",
-            "Burned Lands Cleared"
+            "BL Elite"
         ]
     )
 
@@ -686,6 +677,7 @@ def create_regular_locations(world: DotDWorld) -> None:
     place_subregion_locations(world, TWILIGHT_FALLS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, VALLEY_OF_AVALAR_SUBREGION_LOCATIONS)
     place_subregion_locations(world, RUINS_OF_WARFANG_SUBREGION_LOCATIONS)
+    place_subregion_locations(world, BURNED_LANDS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, FLOATING_ISLANDS_SUBREGION_LOCATIONS)
 
 
