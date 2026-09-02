@@ -86,6 +86,8 @@ def set_location_rules(world: DotDWorld):
              lambda state: state.has("Cynder's Shadow", world.player))
     set_rule(world.get_location("Dam Mana Gem - Behind Earth Wall"), \
              lambda state: state.has_all(("Spyro's Earth", "Chain Swinging"), world.player))
+    set_rule(world.get_location("Dam Elite"), \
+             lambda state: state.has_all(("Cynder's Poison", "Cynder's Wind"), world.player))
 
     # Burned Lands Location Logic
     set_rule(world.get_location("BL Elite"), \

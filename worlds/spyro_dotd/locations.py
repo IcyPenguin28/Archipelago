@@ -570,20 +570,8 @@ def create_regular_locations(world: DotDWorld) -> None:
     the_dam_locations = get_location_names_with_ids(
         [
             "Dam Blue Gem - Middle",
-            "Dam Blue Gem - Near Save Point Left",
-            "Dam Blue Gem - Near Save Point Right",
-            "Dam Blue Gem - Near Earth Wall",
-            "Dam Blue Gem - Top",
             "Dam Health Gem - Behind Left Shadow Gate",
-            "Dam Health Gem - Behind Shadow Gate After Hero Orc",
             "Dam Mana Gem - Wooden Platform",
-            "Dam Mana Gem - Behind Earth Wall",
-            "Dam Armor Chest - Right Pillar",
-            "Dam Armor Chest - Hero Orc",
-            "Dam Elite",
-            "Objective Complete - Open the Floodgates to the Dam",
-            "Objective Complete - Open the Main Floodgate",
-            "The Dam Cleared"
         ]
     )
 
