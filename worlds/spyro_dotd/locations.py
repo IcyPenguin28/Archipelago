@@ -8,7 +8,7 @@ from . import items
 from .items import DotDItem
 from .regions import CATACOMBS_SUBREGION_LOCATIONS, TWILIGHT_FALLS_SUBREGION_LOCATIONS, \
     VALLEY_OF_AVALAR_SUBREGION_LOCATIONS, DRAGON_CITY_SUBREGION_LOCATIONS, \
-    RUINS_OF_WARFANG_SUBREGION_LOCATIONS, \
+    RUINS_OF_WARFANG_SUBREGION_LOCATIONS, THE_DAM_SUBREGION_LOCATIONS, \
     BURNED_LANDS_SUBREGION_LOCATIONS, FLOATING_ISLANDS_SUBREGION_LOCATIONS
 
 if TYPE_CHECKING:
@@ -517,6 +517,7 @@ def create_regular_locations(world: DotDWorld) -> None:
 
     valley_of_avalar_locations = get_location_names_with_ids(
         [
+            "VoA Blue Gem - Cheetah Village",
             "Objective Complete - Save the Cheetah Village"
             # All other locations handled by subregions, as you cannot leave the Cheetah Village until it is saved
         ]
@@ -662,6 +663,8 @@ def create_regular_locations(world: DotDWorld) -> None:
     place_subregion_locations(world, VALLEY_OF_AVALAR_SUBREGION_LOCATIONS)
     place_subregion_locations(world, DRAGON_CITY_SUBREGION_LOCATIONS)
     place_subregion_locations(world, RUINS_OF_WARFANG_SUBREGION_LOCATIONS)
+    place_subregion_locations(world, THE_DAM_SUBREGION_LOCATIONS)
+    # place_subregion_locations(world, THE_DESTROYER_SUBREGION_LOCATIONS)
     place_subregion_locations(world, BURNED_LANDS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, FLOATING_ISLANDS_SUBREGION_LOCATIONS)
 

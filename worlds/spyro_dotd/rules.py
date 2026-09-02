@@ -75,10 +75,17 @@ def set_location_rules(world: DotDWorld):
     set_rule(world.get_location("RoW Armor Chest - Up Right Path Under Earth Slab"), \
                  lambda state: state.has_any(("Spyro's Fire", "Cynder's Poison"), world.player))
     # Earliest can appear is after completion of lower left or lower right.
+    # Upper left/right elite fights require lower-left and lower-right completion requirements, so by the absorption law, they're irrelevant
     # Lower left requires Fire, Swing, and Climb. Lower right requires Fear and climb. Elite mask itself can either be Fire, Ice, or Poison.
     # The logic below is that but simplified.
     set_rule(world.get_location("RoW Elite"), \
              lambda state: state.has_all(("Spyro's Fire", "Spyro's Ice", "Cynder's Poison", "Wall Climbing"), world.player) and state.has_any(("Chain Swinging", "Cynder's Fear"), world.player))
+
+    # The Dam Location Logic
+    set_rule(world.get_location("Dam Health Gem - Behind Left Shadow Gate"), \
+             lambda state: state.has("Cynder's Shadow", world.player))
+    set_rule(world.get_location("Dam Mana Gem - Behind Earth Wall"), \
+             lambda state: state.has_all(("Spyro's Earth", "Chain Swinging"), world.player))
 
     # Burned Lands Location Logic
     set_rule(world.get_location("BL Elite"), \

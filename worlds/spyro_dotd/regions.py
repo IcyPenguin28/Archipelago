@@ -53,7 +53,6 @@ VALLEY_OF_AVALAR_SUBREGION_LOCATIONS = {
         "VoA Blue Gem - Hidden Area",
         "VoA Blue Gem - Above Passageway",
         "VoA Blue Gem - Near Meadow Cave",
-        "VoA Blue Gem - Cheetah Village",
         "VoA Blue Gem - Between Passageway and Hidden Area"
         "VoA Blue Gem - On Top of Platform Near Island",
         "VoA Blue Gem - Right of Big Waterfall",
@@ -145,6 +144,23 @@ RUINS_OF_WARFANG_SUBREGION_LOCATIONS = {
     "RoW End of Level": [
         "Objective Complete - Open the Gates to the Ruins of Warfang",
         "Ruins of Warfang Cleared"
+    ]
+}
+
+THE_DAM_SUBREGION_LOCATIONS = {
+    "Dam Right Weight Gate": [
+        "Dam Blue Gem - Near Save Point Left",
+        "Dam Blue Gem - Near Save Point Right",
+        "Dam Blue Gem - Near Earth Wall",
+        "Dam Blue Gem - Top",
+        "Dam Health Gem - Behind Shadow Gate After Hero Orc",
+        "Dam Mana Gem - Behind Earth Wall",
+        "Dam Armor Chest - Right Pillar",
+        "Dam Armor Chest - Hero Orc",
+        "Dam Elite",
+        "Objective Complete - Open the Floodgates to the Dam",
+        "Objective Complete - Open the Main Floodgate",
+        "The Dam Cleared"
     ]
 }
 
@@ -378,6 +394,21 @@ def connect_subregions_row(world: DotDWorld):
                 rule=lambda state: state.has_all(("Spyro's Fire", "Cynder's Shadow", "Wall Climbing", "Chain Swinging"), player))
     row.connect(eol, "Row Entrance -> End of Level", \
                 rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Fear", "Spyro's Electricity", "Cynder's Shadow", "Spyro's Fire", "Chain Swinging", "Spyro's Earth", "Wall Running"), player))
+
+
+def connect_subregions_dam(world: DotDWorld):
+    """
+    Splits Dam into sub-regions so individual Dam locations
+    don't need to restate the same base item requirements redundantly
+    """
+    player = world.player
+    dam = world.get_region("The Dam")
+
+    right_weight_gate = Region("Dam Right Weight Gate", player, world.multiworld)
+
+    # Requires Shadow to access the weight and wall climbing to get it up to the nearby floodgate
+    dam.connect(right_weight_gate, "Dam Entrance -> Right Weight Gate", \
+                rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Shadow")))
 
 
 def connect_subregions_bl(world: DotDWorld):
