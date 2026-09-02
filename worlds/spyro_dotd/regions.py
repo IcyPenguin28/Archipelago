@@ -53,7 +53,7 @@ VALLEY_OF_AVALAR_SUBREGION_LOCATIONS = {
         "VoA Blue Gem - Hidden Area",
         "VoA Blue Gem - Above Passageway",
         "VoA Blue Gem - Near Meadow Cave",
-        "VoA Blue Gem - Between Passageway and Hidden Area"
+        "VoA Blue Gem - Between Passageway and Hidden Area",
         "VoA Blue Gem - On Top of Platform Near Island",
         "VoA Blue Gem - Right of Big Waterfall",
         "VoA Blue Gem - Near Raft",
@@ -84,17 +84,17 @@ VALLEY_OF_AVALAR_SUBREGION_LOCATIONS = {
         "VoA Health Gem - Hermit Area Tunnels",
     ],
     "VoA Hermit Cave Beyond Wind": [
-        "VoA Blue Gem - Near Hermit"
+        "VoA Blue Gem - Near Hermit",
         "VoA Armor Chest - Hermit",
         "VoA Mana Gem - Near Hermit",
         "Objective Complete - Find the Hermit"
     ],
     "VoA Post-Hermit": [
-        "VoA Mana Gem - Behind Gate"
+        "VoA Mana Gem - Behind Gate",
         "Valley of Avalar Cleared",
         "Objective Complete - Find the Supply Cave",
         "Objective Complete - Find the Raft",
-        "Objective Complete - Bring the Raft to Meadow",
+        "Objective Complete - Bring the Raft to Meadow"
     ]
 }
 
@@ -338,7 +338,7 @@ def connect_subregions_voa(world: DotDWorld):
 
     post_village = Region("VoA Post-Village", player, world.multiworld)
     above_meadow_cave = Region("VoA Above Meadow Cave", player, world.multiworld)
-    meadow_cave = Region("Voa Meadow Cave", player, world.multiworld)
+    meadow_cave = Region("VoA Meadow Cave", player, world.multiworld)
     elite_cliff = Region("VoA Elite Cliff", player, world.multiworld)
     hermit_cave = Region("VoA Hermit Cave", player, world.multiworld)
     hermit_cave_beyond_wind = Region("VoA Hermit Cave Beyond Wind", player, world.multiworld)
@@ -406,9 +406,9 @@ def connect_subregions_row(world: DotDWorld):
     row = world.get_region("Ruins of Warfang")
 
     trap_road = Region("RoW Lower Left Trap Road", player, world.multiworld)
-    upper_right = Region("Row Upper Right", player, world.multiworld)
+    upper_right = Region("RoW Upper Right", player, world.multiworld)
     upper_left = Region("RoW Upper Left", player, world.multiworld)
-    eol = Region("Row End of Level", player, world.multiworld)
+    eol = Region("RoW End of Level", player, world.multiworld)
 
     world.multiworld.regions += [trap_road, upper_left, upper_right, eol]
 
@@ -436,7 +436,7 @@ def connect_subregions_dam(world: DotDWorld):
 
     # Requires Shadow to access the weight and wall climbing to get it up to the nearby floodgate
     dam.connect(right_weight_gate, "Dam Entrance -> Right Weight Gate", \
-                rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Shadow")))
+                rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Shadow"), player))
 
 
 def connect_subregions_destroyer(world: DotDWorld):
@@ -487,6 +487,6 @@ def connect_subregions_fi(world: DotDWorld):
     world.multiworld.regions += [beyond_torch_door]
 
     fi.connect(beyond_torch_door, "FI Entrance -> Beyond Torch Door", \
-               rule=lambda state: state.can_reach_location("Objective Complete - 8/8 Torches Lit", player))
+               rule=lambda state: state.can_reach_location("Objective Complete - Torches Lit 8/8", player))
 
 

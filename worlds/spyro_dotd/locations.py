@@ -562,7 +562,6 @@ def create_regular_locations(world: DotDWorld) -> None:
             "RoW Blue Gem - Left Path Platform Under Trap",
             "RoW Health Gem - Right Path Behind Vines",
             "RoW Mana Gem - Left Path Behind Vines",
-            "RoW Armor Chest - Up Right Path Under Earth Slab",
             "RoW Armor Chest - Left Path Near Key",
             "RoW Elite"
         ]
@@ -621,7 +620,8 @@ def create_regular_locations(world: DotDWorld) -> None:
             "FI Blue Gem - Wyvern Elite Island",
             "FI Blue Gem - Small Island Behind Wyvern Elite",
             "FI Health Gem - Big Bonus Island",
-            "FI Mana Gem"
+            "FI Mana Gem",
+            "Objective Complete - Torches Lit 8/8"
         ]
     )
 
