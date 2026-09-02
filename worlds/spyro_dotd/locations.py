@@ -9,7 +9,8 @@ from .items import DotDItem
 from .regions import CATACOMBS_SUBREGION_LOCATIONS, TWILIGHT_FALLS_SUBREGION_LOCATIONS, \
     VALLEY_OF_AVALAR_SUBREGION_LOCATIONS, DRAGON_CITY_SUBREGION_LOCATIONS, \
     RUINS_OF_WARFANG_SUBREGION_LOCATIONS, THE_DAM_SUBREGION_LOCATIONS, \
-    BURNED_LANDS_SUBREGION_LOCATIONS, FLOATING_ISLANDS_SUBREGION_LOCATIONS
+    THE_DESTROYER_SUBREGION_LOCATIONS, BURNED_LANDS_SUBREGION_LOCATIONS, \
+    FLOATING_ISLANDS_SUBREGION_LOCATIONS
 
 if TYPE_CHECKING:
     from .world import DotDWorld
@@ -582,17 +583,8 @@ def create_regular_locations(world: DotDWorld) -> None:
             "Destroyer Blue Gem - Hip Near Dark Crystal",
             "Destroyer Blue Gem - Right Wrist Left",
             "Destroyer Blue Gem - Right Wrist Right",
-            "Destroyer Blue Gem - Under Right Armpit",
-            "Destroyer Blue Gem - Right Shoulder Left",
-            "Destroyer Blue Gem - Right Shoulder Right",
             "Destroyer Health Gem - Left Arm",
-            "Destroyer Health Gem - Right Arm",
-            "Destroyer Mana Gem - Right Arm",
-            "Destroyer Mana Gem - Mouth",
-            "Destroyer Armor Chest - Torso",
-            "Destroyer Armor Chest - Right Arm",
-            "Objective Complete - Destroy all the crystals of the Destroyer",
-            "The Destroyer Cleared"
+            "Destroyer Armor Chest - Torso"
         ]
     )
 
@@ -652,7 +644,7 @@ def create_regular_locations(world: DotDWorld) -> None:
     place_subregion_locations(world, DRAGON_CITY_SUBREGION_LOCATIONS)
     place_subregion_locations(world, RUINS_OF_WARFANG_SUBREGION_LOCATIONS)
     place_subregion_locations(world, THE_DAM_SUBREGION_LOCATIONS)
-    # place_subregion_locations(world, THE_DESTROYER_SUBREGION_LOCATIONS)
+    place_subregion_locations(world, THE_DESTROYER_SUBREGION_LOCATIONS)
     place_subregion_locations(world, BURNED_LANDS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, FLOATING_ISLANDS_SUBREGION_LOCATIONS)
 

@@ -164,6 +164,22 @@ THE_DAM_SUBREGION_LOCATIONS = {
     ]
 }
 
+THE_DESTROYER_SUBREGION_LOCATIONS = {
+    "Destroyer Top Half": [
+        "Destroyer Blue Gem - Right Shoulder Left",
+        "Destroyer Blue Gem - Right Shoulder Right",
+        "Destroyer Armor Chest - Right Arm",
+    ],
+    "Destroyer Armpit and Beyond": [
+        "Destroyer Blue Gem - Under Right Armpit",
+        "Destroyer Health Gem - Right Arm",
+        "Destroyer Mana Gem - Right Arm",
+        "Destroyer Mana Gem - Mouth",
+        "Objective Complete - Destroy all the crystals of the Destroyer",
+        "The Destroyer Cleared"
+    ],
+}
+
 BURNED_LANDS_SUBREGION_LOCATIONS = {
     "BL Beyond Climbing Wall": [
         "BL Blue Gem - Bridge Before Last Ring Right",
@@ -409,6 +425,23 @@ def connect_subregions_dam(world: DotDWorld):
     # Requires Shadow to access the weight and wall climbing to get it up to the nearby floodgate
     dam.connect(right_weight_gate, "Dam Entrance -> Right Weight Gate", \
                 rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Shadow")))
+
+
+def connect_subregions_destroyer(world: DotDWorld):
+    """
+    Splits Destroyer into sub-regions so individual Destroyer locations
+    don't need to restate the same base item requirements redundantly
+    """
+    player = world.player
+    destroyer = world.get_region("The Destroyer")
+
+    top_half = Region("Destroyer Top Half", player, world.multiworld)
+    armpit = Region("Destroyer Armpit and Beyond", player, world.multiworld)
+
+    destroyer.connect(top_half, "Destroyer Entrance -> Top Half", \
+                rule=lambda state: state.has("Wall Running", player))
+    top_half.connect(armpit, "Destroyer Top Half -> Armpit and Beyond", \
+                rule=lambda state: state.has("Wall Climbing", player))
 
 
 def connect_subregions_bl(world: DotDWorld):
