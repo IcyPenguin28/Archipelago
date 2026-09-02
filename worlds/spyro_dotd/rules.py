@@ -67,6 +67,12 @@ def set_location_rules(world: DotDWorld):
     set_rule(world.get_location("RoW Elite"), \
              lambda state: state.has_all(("Spyro's Fire", "Spyro's Ice", "Cynder's Poison", "Wall Climbing"), world.player) and state.has_any(("Chain Swinging", "Cynder's Fear"), world.player))
 
+    # Burned Lands Location Logic
+    set_rule(world.get_location("BL Elite"), \
+             lambda state: state.has_all(("Cynder's Fear", "Spyro's Electricity", "Spyro's Earth"), world.player))
+    set_rule(world.get_location("BL Health Gem - Elite"), \
+                 lambda state: state.has_all(("Cynder's Fear", "Spyro's Electricity", "Spyro's Earth"), world.player))
+
     # Floating Islands Location Logic
     set_rule(world.get_location("Objective Complete - Torches Lit 8/8"), \
              lambda state: state.has("Spyro's Fire", world.player))
