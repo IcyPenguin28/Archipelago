@@ -7,7 +7,8 @@ from BaseClasses import ItemClassification, Location
 from . import items
 from .items import DotDItem
 from .regions import CATACOMBS_SUBREGION_LOCATIONS, TWILIGHT_FALLS_SUBREGION_LOCATIONS, \
-    VALLEY_OF_AVALAR_SUBREGION_LOCATIONS, RUINS_OF_WARFANG_SUBREGION_LOCATIONS, \
+    VALLEY_OF_AVALAR_SUBREGION_LOCATIONS, DRAGON_CITY_SUBREGION_LOCATIONS, \
+    RUINS_OF_WARFANG_SUBREGION_LOCATIONS, \
     BURNED_LANDS_SUBREGION_LOCATIONS, FLOATING_ISLANDS_SUBREGION_LOCATIONS
 
 if TYPE_CHECKING:
@@ -526,30 +527,13 @@ def create_regular_locations(world: DotDWorld) -> None:
             "DC Blue Gem - Above Fire",
             "DC Blue Gem - Near Torches Gate",
             "DC Blue Gem - First Save Point",
-            "DC Blue Gem - Beginning of Ramparts",
-            "DC Blue Gem - Behind Catapult",
-            "DC Blue Gem - Broken Stairs Top",
-            "DC Blue Gem - Broken Stairs Bottom",
-            "DC Blue Gem - Near Armor Chest",
-            "DC Blue Gem - Behind Shadow Gate Near Doors",
             "DC Health Gem - Behind Bottom Shadow Gate Near Fire",
             "DC Health Gem - Torches",
-            "DC Health Gem - Ramparts Left",
             "DC Mana Gem - Near Pool Wheel",
-            "DC Mana Gem - Ramparts Right",
             "DC Armor Chest - Behind Top Shadow Gate Near Fire",
-            "DC Armor Chest - Near Second Save Point",
-            "DC Armor Chest - Troll",
             "Objective Complete - Extinguish the Fire",
             "Objective Complete - Fill the Pool with Water",
-            "Objective Complete - Find a Bucket",
-            "Objective Complete - Protect the Catapult",
-            "Objective Complete - Destroy the Siege Tower (first)",
-            "Objective Complete - Escort the Artillery Mole to the Catapult",
-            "Objective Complete - Destroy the Siege Tower (second)",
-            "Objective Complete - Destroy the last two Siege Towers",
-            "Objective Complete - Close the City Gates",
-            "Dragon City Cleared"
+            "Objective Complete - Find a Bucket"
         ]
     )
 
@@ -676,6 +660,7 @@ def create_regular_locations(world: DotDWorld) -> None:
     place_subregion_locations(world, CATACOMBS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, TWILIGHT_FALLS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, VALLEY_OF_AVALAR_SUBREGION_LOCATIONS)
+    place_subregion_locations(world, DRAGON_CITY_SUBREGION_LOCATIONS)
     place_subregion_locations(world, RUINS_OF_WARFANG_SUBREGION_LOCATIONS)
     place_subregion_locations(world, BURNED_LANDS_SUBREGION_LOCATIONS)
     place_subregion_locations(world, FLOATING_ISLANDS_SUBREGION_LOCATIONS)

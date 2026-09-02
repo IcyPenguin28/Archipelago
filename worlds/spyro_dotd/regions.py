@@ -99,6 +99,34 @@ VALLEY_OF_AVALAR_SUBREGION_LOCATIONS = {
     ]
 }
 
+DRAGON_CITY_SUBREGION_LOCATIONS = {
+    "DC Ramparts": [
+        "DC Blue Gem - Beginning of Ramparts",
+        "DC Blue Gem - Behind Catapult",
+        "DC Health Gem - Ramparts Left",
+        "DC Mana Gem - Ramparts Right",
+        "Objective Complete - Protect the Catapult",
+        "Objective Complete - Destroy the Siege Tower (first)",
+        "Objective Complete - Escort the Artillery Mole to the Catapult",
+        "Objective Complete - Destroy the Siege Tower (second)",
+        "Objective Complete - Destroy the last two Siege Towers"
+    ],
+    "DC Ramparts Back Exit": [
+        "DC Blue Gem - Broken Stairs Top",
+        "DC Blue Gem - Broken Stairs Bottom",
+        "DC Blue Gem - Near Armor Chest",
+        "DC Armor Chest - Near Second Save Point"
+    ],
+    "DC City Gates": [
+        "DC Blue Gem - Behind Shadow Gate Near Doors",
+        "DC Armor Chest - Troll"
+    ],
+    "DC End of Level": [
+        "Objective Complete - Close the City Gates",
+        "Dragon City Cleared"
+    ]
+}
+
 RUINS_OF_WARFANG_SUBREGION_LOCATIONS = {
     "RoW Lower Left Trap Road": [
         "RoW Blue Gem - Left Path Near Trap",
@@ -295,6 +323,30 @@ def connect_subregions_voa(world: DotDWorld):
                 rule=lambda state: state.has_all(("Wall Climbing", "Wall Running"), player))
     hermit_cave_beyond_wind.connect(post_hermit, "VoA Hermit Cave Beyond Wind-> Post-Hermit", \
                 rule=lambda state: state.can_reach_location("Objective Complete - Find the Hermit", player))
+
+
+def connect_subregions_dc(world: DotDWorld):
+    """
+    Splits Dragon City into sub-regions so individual Dragon City locations
+    don't need to restate the same base item requirements redundantly
+    """
+    player = world.player
+    dc = world.get_region("Dragon City")
+
+    ramparts = Region("DC Ramparts", player ,world.multiworld)
+    back_exit = Region("DC Ramparts Back Exit", player, world.multiworld)
+    city_gates = Region("DC City Gates", player, world.multiworld)
+    eol = Region("DC End of Level", player, world.multiworld)
+
+    dc.connect(ramparts, "DC Entrance -> Ramparts", \
+               rule=lambda state: state.can_reach_location("Objective Complete - Extinguish the Fire", player))
+    ramparts.connect(back_exit, "DC Ramparts -> Ramparts Back Exit", \
+                rule=lambda state: state.can_reach_location("Objective Complete - Protect the Catapult", player))
+    back_exit.connect(city_gates, "DC Ramparts Back Exit -> City Gates", \
+                rule=lambda state: state.has("Wall Climbing", player))
+    city_gates.connect(eol, "DC City Gates -> End of Level", \
+                rule=lambda state: state.has("Spyro's Fire", player))
+
 
 def connect_subregions_aotg(world: DotDWorld):
     """

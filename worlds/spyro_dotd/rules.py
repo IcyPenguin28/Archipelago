@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from worlds.generic.Rules import set_rule
+from worlds.generic.Rules import set_rule, add_rule
 if TYPE_CHECKING:
     from .world import DotDWorld
 
@@ -49,6 +49,19 @@ def set_location_rules(world: DotDWorld):
              lambda state: state.has("Wall Climbing", world.player))
 
     # Dragon City Location Logic
+    set_rule(world.get_location("DC Blue Gem - Broken Stairs Top"), \
+             lambda state: state.has("Wall Climbing", world.player))
+    set_rule(world.get_location("DC Blue Gem - Broken Stairs Bottom"), \
+             lambda state: state.has("Wall Climbing", world.player))
+    set_rule(world.get_location("DC Blue Gem - Behind Shadow Gate Near Doors"), \
+             lambda state: state.has("Cynder's Shadow", world.player))
+    set_rule(world.get_location("DC Health Gem - Behind Bottom Shadow Gate Near Fire"), \
+             lambda state: state.has("Cynder's Shadow", world.player))
+    set_rule(world.get_location("DC Health Gem - Torches"), \
+             lambda state: state.has_all(("Spyro's Fire", "Cynder's Wind", "Wall Climbing"), world.player))
+    set_rule(world.get_location("DC Armor Chest - Behind Top Shadow Gate Near Fire"), \
+             lambda state: state.has("Cynder's Shadow", world.player))
+    
 
     # Attack of the Golem Location Logic
     set_rule(world.get_location("Attack of the Golem Cleared"), \
