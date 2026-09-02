@@ -344,6 +344,9 @@ def connect_subregions_voa(world: DotDWorld):
     hermit_cave_beyond_wind = Region("VoA Hermit Cave Beyond Wind", player, world.multiworld)
     post_hermit = Region("VoA Post-Hermit", player, world.multiworld)
 
+    world.multiworld.regions += [post_village, above_meadow_cave, meadow_cave, elite_cliff, \
+                                 hermit_cave, hermit_cave_beyond_wind, post_hermit]
+
     voa.connect(post_village, "VoA Entrance -> Post-Village", \
                 rule=lambda state: state.can_reach_location("Objective Complete - Save the Cheetah Village", player))
     post_village.connect(above_meadow_cave, "VoA Post-Village -> Above Meadow Cave", \
@@ -372,6 +375,8 @@ def connect_subregions_dc(world: DotDWorld):
     back_exit = Region("DC Ramparts Back Exit", player, world.multiworld)
     city_gates = Region("DC City Gates", player, world.multiworld)
     eol = Region("DC End of Level", player, world.multiworld)
+
+    world.multiworld.regions += [ramparts, back_exit, city_gates, eol]
 
     dc.connect(ramparts, "DC Entrance -> Ramparts", \
                rule=lambda state: state.can_reach_location("Objective Complete - Extinguish the Fire", player))
@@ -405,13 +410,15 @@ def connect_subregions_row(world: DotDWorld):
     upper_left = Region("RoW Upper Left", player, world.multiworld)
     eol = Region("Row End of Level", player, world.multiworld)
 
+    world.multiworld.regions += [trap_road, upper_left, upper_right, eol]
+
     row.connect(trap_road, "RoW Entrance -> Trap Road", \
                 rule=lambda state: state.has("Wall Climbing", player))
     row.connect(upper_right, "RoW Entrance -> Upper Right", \
                 rule=lambda state: state.has_all(("Cynder's Fear", "Wall Climbing", "Spyro's Earth", "Chain Swinging", "Wall Running"), player))
     row.connect(upper_left, "RoW Entrance -> Upper Left", \
                 rule=lambda state: state.has_all(("Spyro's Fire", "Cynder's Shadow", "Wall Climbing", "Chain Swinging"), player))
-    row.connect(eol, "Row Entrance -> End of Level", \
+    row.connect(eol, "RoW Entrance -> End of Level", \
                 rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Fear", "Spyro's Electricity", "Cynder's Shadow", "Spyro's Fire", "Chain Swinging", "Spyro's Earth", "Wall Running"), player))
 
 
@@ -424,6 +431,8 @@ def connect_subregions_dam(world: DotDWorld):
     dam = world.get_region("The Dam")
 
     right_weight_gate = Region("Dam Right Weight Gate", player, world.multiworld)
+
+    world.multiworld.regions += [right_weight_gate]
 
     # Requires Shadow to access the weight and wall climbing to get it up to the nearby floodgate
     dam.connect(right_weight_gate, "Dam Entrance -> Right Weight Gate", \
@@ -441,6 +450,8 @@ def connect_subregions_destroyer(world: DotDWorld):
     top_half = Region("Destroyer Top Half", player, world.multiworld)
     armpit = Region("Destroyer Armpit and Beyond", player, world.multiworld)
 
+    world.multiworld.regions += [top_half, armpit]
+
     destroyer.connect(top_half, "Destroyer Entrance -> Top Half", \
                 rule=lambda state: state.has("Wall Running", player))
     top_half.connect(armpit, "Destroyer Top Half -> Armpit and Beyond", \
@@ -457,6 +468,8 @@ def connect_subregions_bl(world: DotDWorld):
 
     beyond_climbing_wall = Region("BL Beyond Climbing Wall", player, world.multiworld)
 
+    world.multiworld.regions += [beyond_climbing_wall]
+
     bl.connect(beyond_climbing_wall, "BL Entrance -> Beyond Climbing Wall", \
                rule=lambda state: state.has("Wall Climbing", player))
 
@@ -470,6 +483,8 @@ def connect_subregions_fi(world: DotDWorld):
     fi = world.get_region("Floating Islands")
 
     beyond_torch_door = Region("FI Beyond Torch Door", player, world.multiworld)
+
+    world.multiworld.regions += [beyond_torch_door]
 
     fi.connect(beyond_torch_door, "FI Entrance -> Beyond Torch Door", \
                rule=lambda state: state.can_reach_location("Objective Complete - 8/8 Torches Lit", player))
