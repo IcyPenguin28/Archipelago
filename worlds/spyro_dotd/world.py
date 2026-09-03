@@ -60,11 +60,11 @@ class DotDWorld(World):
 
         self.options.death_link.value = slot_data["death_link"]
         self.options.learn_fury.value = slot_data["learn_fury"]
-        self.options.shuffled_elements.value = slot_data["shuffled_elements"]
+        self.options.shuffled_elements.value = set(slot_data["shuffled_elements"])
         self.options.spyro_elements_handling.value = slot_data["spyro_elements_handling"]
         self.options.spyro_elements_handling.value = slot_data["cynder_elements_handling"]
         self.options.learn_to_climb.value = slot_data["learn_to_climb"]
-        self.options.learn_to_wall_run = slot_data["learn_to_wall_run"]
+        self.options.learn_to_wall_run.value = slot_data["learn_to_wall_run"]
         self.options.shuffle_chapter_order.value = slot_data["shuffle_chapter_order"]
         self.chapter_order = [str(x) for x in slot_data["chapter_order"]]
 
