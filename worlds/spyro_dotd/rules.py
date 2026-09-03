@@ -73,19 +73,21 @@ def set_location_rules(world: DotDWorld):
     set_rule(world.get_location("RoW Mana Gem - Left Path Behind Vines"), \
              lambda state: state.has("Wall Climbing", world.player) and state.has_any((world.element_items["Fire"], world.element_items["Poison"]), world.player))
     set_rule(world.get_location("RoW Armor Chest - Up Right Path Under Earth Slab"), \
-                 lambda state: state.has_any((world.element_items["Fire"], world.element_items["Poison"]), world.player))
+             lambda state: state.has_any((world.element_items["Fire"], world.element_items["Poison"]), world.player))
     # Earliest can appear is after completion of lower left or lower right.
     # Upper left/right elite fights require lower-left and lower-right completion requirements, so by the absorption law, they're irrelevant
     # Lower left requires Fire, Swing, and Climb. Lower right requires Fear and climb. Elite mask itself can either be Fire, Ice, or Poison.
     # The logic below is that but simplified.
     set_rule(world.get_location("RoW Elite"), \
-             lambda state: state.has_all((world.element_items["Fire"], world.element_items["Ice"], world.element_items["Poison"], "Wall Climbing"), world.player) and state.has_any(("Chain Swinging", world.element_items["Fear"]), world.player))
+             lambda state: state.has_all((world.element_items["Fire"], world.element_items["Ice"], world.element_items["Poison"], "Wall Climbing"), world.player))
+            # lambda state: state.has_all((world.element_items["Fire"], world.element_items["Ice"], world.element_items["Poison"], "Wall Climbing"), world.player) and state.has_any(("Chain Swinging", world.element_items["Fear"]), world.player))    # Swap when and if we gate swinging
 
     # The Dam Location Logic
     set_rule(world.get_location("Dam Health Gem - Behind Left Shadow Gate"), \
              lambda state: state.has(world.element_items["Shadow"], world.player))
     set_rule(world.get_location("Dam Mana Gem - Behind Earth Wall"), \
-             lambda state: state.has_all((world.element_items["Earth"], "Chain Swinging"), world.player))
+             lambda state: state.has(world.element_items["Earth"], world.player))
+            # lambda state: state.has_all((world.element_items["Earth"], "Chain Swinging"), world.player))  # Swap when and if we gate swinging
     set_rule(world.get_location("Dam Elite"), \
              lambda state: state.has_all((world.element_items["Poison"], world.element_items["Wind"]), world.player))
 

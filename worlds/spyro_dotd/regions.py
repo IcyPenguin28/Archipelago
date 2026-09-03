@@ -323,7 +323,8 @@ def connect_subregions_tf(world: DotDWorld):
     world.multiworld.regions += [beyond_vines, eol]
 
     tf.connect(eol, "TF Entrance -> End of Level", \
-               rule=lambda state: state.has_all(("Wall Climbing", "Chain Swinging"), player))
+               rule=lambda state: state.has("Wall Climbing", player))
+               # rule=lambda state: state.has_all(("Wall Climbing", "Chain Swinging"), player)) # Swap when and if we can gate swinging
     tf.connect(beyond_vines, "TF Entrance -> Beyond Vines", \
                rule=lambda state: state.has_any((world.element_items["Fire"], world.element_items["Poison"]), player))
 
@@ -415,11 +416,14 @@ def connect_subregions_row(world: DotDWorld):
     row.connect(trap_road, "RoW Entrance -> Trap Road", \
                 rule=lambda state: state.has("Wall Climbing", player))
     row.connect(upper_right, "RoW Entrance -> Upper Right", \
-                rule=lambda state: state.has_all((world.element_items["Fear"], "Wall Climbing", world.element_items["Earth"], "Chain Swinging", "Wall Running"), player))
+                rule=lambda state: state.has_all((world.element_items["Fear"], "Wall Climbing", world.element_items["Earth"], "Wall Running"), player))
+                # rule=lambda state: state.has_all((world.element_items["Fear"], "Wall Climbing", world.element_items["Earth"], "Chain Swinging", "Wall Running"), player)) # Swap when and if we can gate swinging
     row.connect(upper_left, "RoW Entrance -> Upper Left", \
-                rule=lambda state: state.has_all((world.element_items["Fire"], world.element_items["Shadow"], "Wall Climbing", "Chain Swinging"), player))
+                rule=lambda state: state.has_all((world.element_items["Fire"], world.element_items["Shadow"], "Wall Climbing"), player))
+                # rule=lambda state: state.has_all((world.element_items["Fire"], world.element_items["Shadow"], "Wall Climbing", "Chain Swinging"), player))    # Swap when and if we can gate swinging
     row.connect(eol, "RoW Entrance -> End of Level", \
-                rule=lambda state: state.has_all(("Wall Climbing", world.element_items["Fear"], world.element_items["Electricity"], world.element_items["Shadow"], world.element_items["Fire"], "Chain Swinging", world.element_items["Earth"], "Wall Running"), player))
+                rule=lambda state: state.has_all(("Wall Climbing", world.element_items["Fear"], world.element_items["Electricity"], world.element_items["Shadow"], world.element_items["Fire"], world.element_items["Earth"], "Wall Running"), player))
+                # rule=lambda state: state.has_all(("Wall Climbing", world.element_items["Fear"], world.element_items["Electricity"], world.element_items["Shadow"], world.element_items["Fire"], "Chain Swinging", world.element_items["Earth"], "Wall Running"), player)) # Swap when and if we can gate swinging
 
 
 def connect_subregions_dam(world: DotDWorld):
