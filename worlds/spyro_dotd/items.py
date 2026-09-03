@@ -246,13 +246,28 @@ def push_unshuffled_element_items(world: DotDWorld) -> None:
     """
     Elements not in the shuffle pool are available from the start of the
     game. Grant their individual item via push_precollected rather than
-    leaving no item for them at all — this keeps state.has() checks in
+    leaving no item for them at all. This keeps state.has() checks in
     rules.py/regions.py truthful regardless of which elements were shuffled.
     """
     shuffled = world.options.shuffled_elements.value
     for element, item_name in ELEMENT_TO_ITEM_NAME.items():
         if element not in shuffled:
             world.multiworld.push_precollected(world.create_item(item_name))
+
+def push_available_ability_items(world: DotDWorld) -> None:
+    """
+    Non-elemental abilites that are not gated with the "Learn" settings are available from the start of the
+    game. Grant their individual item via push_precollected rather than
+    leaving no item for them at all. This keeps state.has() checks in
+    rules.py/regions.py truthful regardless of which abilities are gated.
+    """
+    climb_gated = bool(world.options.learn_to_climb.value)
+    run_gated = bool(world.options.learn_to_wall_run.value)
+
+    if not climb_gated:
+        world.multiworld.push_precollected(world.create_item("Wall Climbing"))
+    if not run_gated:
+        world.multiworld.push_precollected(world.create_item("Wall Running"))
 
 
 def get_element_item_map(world: DotDWorld) -> dict[str, str]:

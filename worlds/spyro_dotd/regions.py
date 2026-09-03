@@ -306,7 +306,7 @@ def connect_subregions_catacombs(world: DotDWorld):
     beyond_vines.connect(waterfall_base, "Catacombs Beyond Vines -> Waterfall Base", \
                           rule=lambda state: state.has(world.element_items["Electricity"], player))
     waterfall_base.connect(waterfall, "Catacombs Waterfall Base -> Waterfall", \
-                           rule=lambda state: state.has("Wall Climbing"))
+                           rule=lambda state: state.has("Wall Climbing", player))
 
 
 def connect_subregions_tf(world: DotDWorld):

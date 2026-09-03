@@ -85,6 +85,7 @@ class DotDWorld(World):
     def create_items(self) -> None:
         items.create_all_items(self)
         items.push_unshuffled_element_items(self)
+        items.push_available_ability_items(self)
 
     # Our world class must also have a create_item function that can create any one of our items by name at any time.
     # We also put this in a different file, teh same one that create_items is in.
@@ -110,7 +111,7 @@ class DotDWorld(World):
             "spyro_elements_handling",
             "cynder_elements_handling",
             "learn_to_climb",
-            "learn_to_wallrun",
+            "learn_to_wall_run",
             "learn_fury"
         )
 
