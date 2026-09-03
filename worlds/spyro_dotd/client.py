@@ -22,9 +22,6 @@ from .pcsx2_interface.pine import Pine
 import logging
 logging.getLogger("websockets").setLevel(logging.WARNING)
 
-# Okay, low-key half of this was written by Claude. I'm trash at netcode and MIPS and have never written for AP before. I am just one guy.
-# No one else interested in this project at the time of writing this comment either has the time or the knowledge to contribute to it
-
 # Useful addresses
 ADDR_SPYRO_CURRENT_HP = 0x9FEAE0
 ADDR_SPYRO_BASE_HP = 0x9FEAE4
@@ -46,6 +43,9 @@ ADDR_CURRENT_LEVEL = 0x9FE274
 ADDR_NEXT_LEVEL = 0x9FE278
 ADDR_PAUSE_FLAG = 0x7B7670
 ADDR_CKS08GAMESTRUCTURE = 0x9FEA90
+ADDR_CURRENT_LEVEL = 0x9FE274
+ADDR_NEXT_LEVEL = 0x9FE278
+ADDR_MENU_VALUE = 0x9FE308
 
 # EXP Buckets
 ADDR_SPYRO_UNSPENT_EXP = 0x9FEB18
@@ -99,6 +99,18 @@ ADDR_DESTROYER_CLEAR = 0x9FECDB
 ADDR_BURNED_CLEAR = 0x9FECDC
 ADDR_ISLANDS_CLEAR = 0x9FECDD
 ADDR_MALEFOR_CLEAR = 0x9FECDE
+
+# Base pointer addresses
+ADDR_PTR_CKGRPS08ENEMY = 0x9FDFC4
+ADDR_PTR_CKGRPS08HERO = 0x9FDFC8
+
+# Pointer to class values
+# Every object of a given class has the same pointer value at offset 0x0
+# Note that the class names can't be seen on PS2, but they can on Wii by following the pointer chain at offset 0x0
+CLASS_PTR_CKS08GAMESTRUCTURE = 0x00788330
+CLASS_PTR_CKHKS08HERO = 0x00786B60
+CLASS_PTR_CKS08ENEMYELEMENTPOOL = 0x00785760
+CLASS_PTR_CNODE = 0x00778AC0
 
 # Element Rando scratch addresses
 ADDR_FIRE_UNLOCKED = 0x00A6C6A0
@@ -188,6 +200,22 @@ LEVEL_NAME_TO_ID = {
     "Burned Lands":       b"\x64",
     "Floating Islands":   b"\x6E",
     "Malefor's Lair":     b"\x78",
+}
+
+LEVEL_ID_TO_NAME = {
+    #Matches the LVL### folders, 70 doesn't exist
+    0:      "Main Menu",
+    10:     "The Catacombs",
+    20:     "Twilight Falls",
+    30:     "Valley of Avalar",
+    40:     "Dragon City",
+    50:     "Attack of the Golem",
+    60:     "Ruins of Warfang",
+    80:     "The Dam",
+    90:     "The Destroyer",
+    100:    "Burned Lands",
+    110:    "Floating Islands",
+    120:    "Malefor's Lair"
 }
 
 ARMOR_NAME_TO_SCRATCH_ADDRESS = {
@@ -285,6 +313,10 @@ class MemoryReader:
     def write_bytes(self, ps2_address: int, data: bytes) -> bool:
         return self._safe_op(lambda: self.client.write_bytes(ps2_address, data)) is not None
 
+    def read_pointer(self, ps2_address: int) -> Optional[int]:
+        address = self.read_u32(ps2_address)
+        return address if address is not None and address > 0x00100000 and address < 0x1FFFFFFD else None
+
     def get_game_id(self) -> Optional[str]:
         return self._safe_op(lambda: self.client.get_game_id())
 
@@ -305,6 +337,14 @@ class DotDContext(CommonContext):
             "Malefor's Lair"
         ]
 
+        self.current_level = None
+        self.last_menu_value = b"\x00"
+
+        # Pointers to useful game objects, such as hero data
+        # The level watcher will update those pointers when needed
+        self.addr_spyro_hero = None
+        self.addr_cynder_hero = None
+
         # ---------------------------------------------------------------
         # Idempotency tracking (fix for !collect / reconnect double-apply)
         # ---------------------------------------------------------------
@@ -323,6 +363,7 @@ class DotDContext(CommonContext):
         # Item state variables
         self._session_blue_gems_at_connect: int = 0
         self._learned_fury: list[bool] = [True, True] # index 0 = Spyro, 1 = Cynder
+        self._learned_wall_climbing = True
 
         # Armor names received — set-based, naturally idempotent
         self._received_armor: Set[str] = set()
@@ -334,6 +375,10 @@ class DotDContext(CommonContext):
         self.player_dead = False
         self.learn_fury = 0
         self.shuffled_elements = set()
+        self.learn_wall_climbing = False
+
+        # Prepare to fire an async task to check for when wall climbing can be learned
+        self._wall_climbing_learner_task: Optional[asyncio.Task] = None
 
         # Whether game-version check has passed
         self._game_version_ok: bool = False
@@ -415,6 +460,10 @@ class DotDContext(CommonContext):
             if self.learn_fury == 0:
                 self._learned_fury = [True, True]
 
+            self.learn_wall_climbing = bool(args["slot_data"].get("learn_wall_climbing", 0))
+            if not self.learn_wall_climbing:
+                self._learned_wall_climbing = True
+
             # Handle Shuffled Elements
             # Since elements can be already known on connection, 
             for element in self._learned_elements:
@@ -459,6 +508,10 @@ class DotDContext(CommonContext):
         self._received_armor = set()
         self._num_chapters_unlocked = 0
         self._learned_fury = [False, False] # accumulate needs to restore the flags from false
+        self._learned_wall_climbing = False
+        if self._wall_climbing_learner_task and not self._wall_climbing_learner_task.done():
+            self._wall_climbing_learner_task.cancel()
+        self._wall_climbing_learner_task = None
 
         # Seed with the non-shuffled baseline so a full resync starts from
         # the correct "everything not in the shuffle pool" state
@@ -509,6 +562,13 @@ class DotDContext(CommonContext):
         elif item_name in ITEM_NAME_TO_ELEMENT:
             # Item is an individual element
             self._learned_elements.add(ITEM_NAME_TO_ELEMENT[item_name])
+        elif item_name == "Wall Climbing":
+            if not self._learned_wall_climbing:
+                self._learned_wall_climbing = True
+                if self._wall_climbing_learner_task and not self._wall_climbing_learner_task.done():
+                    self._wall_climbing_learner_task.cancel()
+                self._wall_climbing_learner_task = asyncio.create_task(wall_climbing_learner(self), name="wall climbing learner")
+            
 
         # Instant consumables (Small Health Gem / Small Mana Gem) are handled inside
         # handle_receive_item because they are meant to be applied once per
@@ -759,6 +819,37 @@ class DotDContext(CommonContext):
             self._goal_sent = True
             print("Goal sent: Malefor defeated!")
 
+    # ------------------------------------------------------------------
+    # Hero pointers (dragon data in levels)
+    # ------------------------------------------------------------------
+    def update_hero_pointers(self) -> bool:
+        """
+        Retrieve the pointers for the CKHkS08Hero objects for Spyro and Cynder by following a pointer chain,
+        then update the saved pointers with the values read or None if the read didn't succeed.
+        """
+        success = False
+        # Base pointer to CKS08GrpHero is in a CKS08GameManager object, which is a global object (in GAME.KP2, so static)
+        # This pointer is always null on the main menu and during loading screens
+        # CKS08GameManager -> CKGrpS08Hero -> some group members stuff -> CKHkS08Hero (one for Spyro one for Cynder)
+        if (addr_ckgrps08hero := self.memory.read_pointer(ADDR_PTR_CKGRPS08HERO)):
+            if (addr_group_members := self.memory.read_pointer(addr_ckgrps08hero + 0x30)):
+                if ((addr_spyro := self.memory.read_pointer(addr_group_members))
+                        and (addr_cynder := self.memory.read_pointer(addr_group_members + 0x4))):
+                    # We check to make sure that these are indeed CKHkS08Hero objects by checking the class pointer value
+                    if (self.memory.read_u32(addr_spyro) == CLASS_PTR_CKHKS08HERO
+                            and self.memory.read_u32(addr_cynder) == CLASS_PTR_CKHKS08HERO):
+                        self.addr_spyro_hero = addr_spyro
+                        self.addr_cynder_hero = addr_cynder
+                        success = True
+                        print(f"Spyro CKHkS08Hero object start address: {hex(addr_spyro)} | Cynder CKHkS08Hero object start address: {hex(addr_cynder)}")
+
+        if not success:
+            # Overwrite whatever previous pointer value with None
+            self.addr_spyro_hero = None
+            self.addr_cynder_hero = None
+            print(f"Could not get Hero pointers.")
+        return success
+
 
 # ---------------------------------------------------------------------------
 # Globals (gem totals mirrored into memory by setter tasks)
@@ -910,6 +1001,81 @@ async def goal_watcher(ctx: DotDContext):
         await asyncio.sleep(0.5)
 
 
+async def level_watcher(ctx: DotDContext):
+    """
+    Everything that needs to be edited once per level load is done here.
+    Once the level ID changes from FFFFFFFF to a valid level,
+    it means the game is done reading the level files and deserializing objects,
+    and the rest of the loading screen is spent just initializing states and stuff.
+    Data that was never meant to be overwritten once loaded is already loaded in memory at this point
+    and can be freely edited. Changes will last for as long as the level is loaded.
+    Pointers to dynamic objects that need to be used later such as the Hero data are also fetched here.
+    """
+    while True:
+        try:
+            if ctx.memory.is_connected and ctx._game_version_ok:
+                curr_level = ctx.memory.read_u32(ADDR_CURRENT_LEVEL)
+
+                if curr_level is None or curr_level == 0xFFFFFFFF:
+                    ctx.current_level = None
+                    await asyncio.sleep(0.1)
+                    continue
+
+                if (level_name := LEVEL_ID_TO_NAME.get(curr_level)) != ctx.current_level:
+                    ctx.current_level = level_name
+                    print(f"[Level Watcher] Current Level : {level_name}")
+
+                    # Update the necessary pointers
+                    ctx.update_hero_pointers()
+
+                    # Edit Elites data
+                    # if ctx.random_elite_elements != 0 and (elites := LEVEL_NAME_TO_ELITES.get(level_name)):
+                    #     for elite_name in elites:
+                    #         ctx.edit_elite_data(elite_name)
+
+                    # If wall climbing has not yet been learned, set these bytes at offsets +0xEC8 from the base hero pointers to 0x01
+                    # This will disable wall climbing for the rest of the level
+                    if not ctx._learned_wall_climbing and ctx.addr_spyro_hero and ctx.addr_cynder_hero:
+                        ctx.memory.write_bytes(ctx.addr_spyro_hero + 0xEC8, b"\x01")
+                        ctx.memory.write_bytes(ctx.addr_cynder_hero + 0xEC8, b"\x01")
+
+                if level_name == "Main Menu":
+                    menu_value = ctx.memory.read_bytes(ADDR_MENU_VALUE, 1) or b"\x00"
+
+                    # If the menu value is 0x9 (can see New game/Load game) or 0x12 (Load menu with all 5 save slots),
+                    # we know that the current data will be overwritten and some items will be lost
+                    # Once this menu value changes, we can write back the items to memory
+                    if ctx.last_menu_value == b"\x09" or ctx.last_menu_value == b"\x12":
+                        if menu_value != b"\x09" and menu_value != b"\x12":
+                            ctx._flush_item_state()
+                            print("[Level Watcher] Restored item state after New/Load game")
+
+                    ctx.last_menu_value = menu_value
+
+        except Exception as e:
+            print(f"Error in level_watcher: {e}")
+        await asyncio.sleep(1.0)
+
+
+async def wall_climbing_learner(ctx: DotDContext):
+    """
+    Waits until the game signals it's safe to re-enable wall climbing
+    (Hero+0xEC8 reads 0x19), then flips it to 0x18. If a reset happens
+    mid-wait, _reset_item_state() cancels this task directly.
+    """
+    while True:
+        if ctx.addr_spyro_hero is None or ctx.addr_cynder_hero is None:
+            await asyncio.sleep(0.1)
+            continue
+        spyro_byte = ctx.memory.read_bytes(ctx.addr_spyro_hero + 0xEC8, 1)
+        cynder_byte = ctx.memory.read_bytes(ctx.addr_cynder_hero + 0xEC8, 1)
+        if spyro_byte == b"\x19" or cynder_byte == b"\x19":
+            break
+        await asyncio.sleep(0.1)
+
+    ctx.memory.write_bytes(ctx.addr_spyro_hero + 0xEC8, b"\x18")
+    ctx.memory.write_bytes(ctx.addr_cynder_hero + 0xEC8, b"\x18")
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -934,6 +1100,7 @@ def main(*args: str):
         fury_task = asyncio.create_task(fury_points_setter(ctx), name="fury task")
         death_task = asyncio.create_task(death_watcher(ctx), name="death watcher")
         goal_task = asyncio.create_task(goal_watcher(ctx), name="goal watcher")
+        level_task = asyncio.create_task(level_watcher(ctx), name="level watcher")
         watchdog_task = asyncio.create_task(emulator_watchdog(ctx), name="emulator watchdog")
 
         if gui_enabled:
@@ -943,7 +1110,7 @@ def main(*args: str):
         await ctx.exit_event.wait()
 
         # Cancel all background tasks
-        for task in (watcher_task, health_gem_task, mana_gem_task, fury_task, death_task, goal_task, watchdog_task):
+        for task in (watcher_task, health_gem_task, mana_gem_task, fury_task, death_task, goal_task, level_task, watchdog_task):
             task.cancel()
             try:
                 await task

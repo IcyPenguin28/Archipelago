@@ -32,17 +32,17 @@ def set_location_rules(world: DotDWorld):
 
     # Catacombs Location Logic
     set_rule(world.get_location("The Catacombs Cleared"), \
-             lambda state: state.has("Cynder's Wind", world.player))
+             lambda state: state.has(world.element_items["Wind"], world.player))
     set_rule(world.get_location("Catacombs Elite"), \
-             lambda state: state.has("Cynder's Shadow", world.player))
+             lambda state: state.has(world.element_items["Shadow"], world.player))
 
     # Twilight Falls Location Logic
     set_rule(world.get_location("TF Elite"), \
-             lambda state: state.has("Spyro's Earth", world.player))
+             lambda state: state.has(world.element_items["Earth"], world.player))
 
     # Valley of Avalar Location Logic
     set_rule(world.get_location("VoA Elite"), \
-             lambda state: state.has_all(("Spyro's Electricity", "Cynder's Fear"), world.player))
+             lambda state: state.has_all((world.element_items["Electricity"], world.element_items["Fear"]), world.player))
     set_rule(world.get_location("VoA Mana Gem - Behind Gate"), \
              lambda state: state.can_reach_location("Objective Complete - Find the Supply Cave", world.player))
     set_rule(world.get_location("VoA Armor Chest - Big Waterfall"), \
@@ -54,13 +54,13 @@ def set_location_rules(world: DotDWorld):
     set_rule(world.get_location("DC Blue Gem - Broken Stairs Bottom"), \
              lambda state: state.has("Wall Climbing", world.player))
     set_rule(world.get_location("DC Blue Gem - Behind Shadow Gate Near Doors"), \
-             lambda state: state.has("Cynder's Shadow", world.player))
+             lambda state: state.has(world.element_items["Shadow"], world.player))
     set_rule(world.get_location("DC Health Gem - Behind Bottom Shadow Gate Near Fire"), \
-             lambda state: state.has("Cynder's Shadow", world.player))
+             lambda state: state.has(world.element_items["Shadow"], world.player))
     set_rule(world.get_location("DC Health Gem - Torches"), \
-             lambda state: state.has_all(("Spyro's Fire", "Cynder's Wind", "Wall Climbing"), world.player))
+             lambda state: state.has_all((world.element_items["Fire"], world.element_items["Wind"], "Wall Climbing"), world.player))
     set_rule(world.get_location("DC Armor Chest - Behind Top Shadow Gate Near Fire"), \
-             lambda state: state.has("Cynder's Shadow", world.player))
+             lambda state: state.has(world.element_items["Shadow"], world.player))
     
 
     # Attack of the Golem Location Logic
@@ -69,37 +69,37 @@ def set_location_rules(world: DotDWorld):
 
     # Ruins of Warfang Location Logic
     set_rule(world.get_location("RoW Health Gem - Right Path Behind Vines"), \
-             lambda state: state.has_any(("Spyro's Fire", "Cynder's Poison"), world.player))
+             lambda state: state.has_any((world.element_items["Fire"], world.element_items["Poison"]), world.player))
     set_rule(world.get_location("RoW Mana Gem - Left Path Behind Vines"), \
-             lambda state: state.has("Wall Climbing", world.player) and state.has_any(("Spyro's Fire", "Cynder's Poison"), world.player))
+             lambda state: state.has("Wall Climbing", world.player) and state.has_any((world.element_items["Fire"], world.element_items["Poison"]), world.player))
     set_rule(world.get_location("RoW Armor Chest - Up Right Path Under Earth Slab"), \
-                 lambda state: state.has_any(("Spyro's Fire", "Cynder's Poison"), world.player))
+                 lambda state: state.has_any((world.element_items["Fire"], world.element_items["Poison"]), world.player))
     # Earliest can appear is after completion of lower left or lower right.
     # Upper left/right elite fights require lower-left and lower-right completion requirements, so by the absorption law, they're irrelevant
     # Lower left requires Fire, Swing, and Climb. Lower right requires Fear and climb. Elite mask itself can either be Fire, Ice, or Poison.
     # The logic below is that but simplified.
     set_rule(world.get_location("RoW Elite"), \
-             lambda state: state.has_all(("Spyro's Fire", "Spyro's Ice", "Cynder's Poison", "Wall Climbing"), world.player) and state.has_any(("Chain Swinging", "Cynder's Fear"), world.player))
+             lambda state: state.has_all((world.element_items["Fire"], world.element_items["Ice"], world.element_items["Poison"], "Wall Climbing"), world.player) and state.has_any(("Chain Swinging", world.element_items["Fear"]), world.player))
 
     # The Dam Location Logic
     set_rule(world.get_location("Dam Health Gem - Behind Left Shadow Gate"), \
-             lambda state: state.has("Cynder's Shadow", world.player))
+             lambda state: state.has(world.element_items["Shadow"], world.player))
     set_rule(world.get_location("Dam Mana Gem - Behind Earth Wall"), \
-             lambda state: state.has_all(("Spyro's Earth", "Chain Swinging"), world.player))
+             lambda state: state.has_all((world.element_items["Earth"], "Chain Swinging"), world.player))
     set_rule(world.get_location("Dam Elite"), \
-             lambda state: state.has_all(("Cynder's Poison", "Cynder's Wind"), world.player))
+             lambda state: state.has_all((world.element_items["Poison"], world.element_items["Wind"]), world.player))
 
     # Burned Lands Location Logic
     set_rule(world.get_location("BL Elite"), \
-             lambda state: state.has_all(("Cynder's Fear", "Spyro's Electricity", "Spyro's Earth"), world.player))
+             lambda state: state.has_all((world.element_items["Fear"], world.element_items["Electricity"], world.element_items["Earth"]), world.player))
     set_rule(world.get_location("BL Health Gem - Elite"), \
-                 lambda state: state.has_all(("Cynder's Fear", "Spyro's Electricity", "Spyro's Earth"), world.player))
+                 lambda state: state.has_all((world.element_items["Fear"], world.element_items["Electricity"], world.element_items["Earth"]), world.player))
 
     # Floating Islands Location Logic
     set_rule(world.get_location("Objective Complete - Torches Lit 8/8"), \
-             lambda state: state.has("Spyro's Fire", world.player))
+             lambda state: state.has(world.element_items["Fire"], world.player))
     set_rule(world.get_location("FI Elite - Wyvern"), \
-             lambda state: state.has_all(("Spyro's Ice", "Cynder's Wind"), world.player))
+             lambda state: state.has_all((world.element_items["Ice"], world.element_items["Wind"]), world.player))
     set_rule(world.get_location("FI Elite - Hero Grublin"), \
-             lambda state: state.has_all(("Spyro's Fire", "Cynder's Shadow"), world.player))
+             lambda state: state.has_all((world.element_items["Fire"], world.element_items["Shadow"]), world.player))
     

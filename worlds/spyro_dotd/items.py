@@ -96,7 +96,8 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     "Cynder's Fear": ItemClassification.progression,
     "Cynder's Wind": ItemClassification.progression,
     "Cynder's Shadow": ItemClassification.progression,
-    "Chain Swinging": ItemClassification.progression
+    "Chain Swinging": ItemClassification.progression,
+    "Wall Climbing": ItemClassification.progression
 }
 
 ELEMENT_TO_ITEM_NAME = {
@@ -178,10 +179,8 @@ def create_all_items(world: DotDWorld) -> None:
     itempool += keys
     
     # NOTE: Some items may only exist if the player enables certain options
-    # if world.options.learn_to_fly:
-    #     itempool.append(world.create_item("Dragons' Flight"))
-    # if world.options.learn_to_climb:
-    #     itempool.append(world.create_item("Wall Climbing"))
+    if world.options.learn_to_climb:
+        itempool.append(world.create_item("Wall Climbing"))
     # if world.options.learn_to_wall_run:
     #     itempool.append(world.create_item("Wall Running"))
     if world.options.learn_fury.current_key == "both_together":
@@ -240,3 +239,42 @@ def create_all_items(world: DotDWorld) -> None:
     # With our world's itempool finalized, we now need to submit it to the multiworld itempool.
     # This is how the generator actually knows about the existence of our items.
     world.multiworld.itempool += itempool
+
+
+def push_unshuffled_element_items(world: DotDWorld) -> None:
+    """
+    Elements not in the shuffle pool are available from the start of the
+    game. Grant their individual item via push_precollected rather than
+    leaving no item for them at all — this keeps state.has() checks in
+    rules.py/regions.py truthful regardless of which elements were shuffled.
+    """
+    shuffled = world.options.shuffled_elements.value
+    for element, item_name in ELEMENT_TO_ITEM_NAME.items():
+        if element not in shuffled:
+            world.multiworld.push_precollected(world.create_item(item_name))
+
+
+def get_element_item_map(world: DotDWorld) -> dict[str, str]:
+    """
+    Maps each bare element name (as used in options/valid_keys/client) to the
+    actual item name that must be held to be considered as having it.
+    - Not shuffled -> always the individual item name (it's precollected).
+    - Shuffled + individual handling -> the individual item name.
+    - Shuffled + all-at-once handling -> the dragon's grouped "Elements" item.
+    """
+    shuffled = world.options.shuffled_elements.value
+    spyro_individual = world.options.spyro_elements_handling.current_key == "individual"
+    cynder_individual = world.options.cynder_elements_handling.current_key == "individual"
+
+    element_items: dict[str, str] = {}
+    for element, individual_name in ELEMENT_TO_ITEM_NAME.items():
+        is_spyro_element = element in ("Fire", "Electricity", "Ice", "Earth")
+        use_individual = spyro_individual if is_spyro_element else cynder_individual
+        grouped_name = "Spyro's Elements" if is_spyro_element else "Cynder's Elements"
+
+        if element in shuffled and not use_individual:
+            element_items[element] = grouped_name
+        else:
+            element_items[element] = individual_name
+
+    return element_items

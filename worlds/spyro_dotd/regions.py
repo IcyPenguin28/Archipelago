@@ -302,9 +302,9 @@ def connect_subregions_catacombs(world: DotDWorld):
     world.multiworld.regions += [beyond_vines, waterfall_base, waterfall]
 
     catacombs.connect(beyond_vines, "Catacombs Entrance -> Beyond Vines", \
-                      rule=lambda state: state.has_any(("Spyro's Fire", "Cynder's Poison"), player))
+                      rule=lambda state: state.has_any((world.element_items["Fire"], world.element_items["Poison"]), player))
     beyond_vines.connect(waterfall_base, "Catacombs Beyond Vines -> Waterfall Base", \
-                          rule=lambda state: state.has("Spyro's Electricity", player))
+                          rule=lambda state: state.has(world.element_items["Electricity"], player))
     waterfall_base.connect(waterfall, "Catacombs Waterfall Base -> Waterfall", \
                            rule=lambda state: state.has("Wall Climbing"))
 
@@ -325,7 +325,7 @@ def connect_subregions_tf(world: DotDWorld):
     tf.connect(eol, "TF Entrance -> End of Level", \
                rule=lambda state: state.has_all(("Wall Climbing", "Chain Swinging"), player))
     tf.connect(beyond_vines, "TF Entrance -> Beyond Vines", \
-               rule=lambda state: state.has_any(("Spyro's Fire", "Cynder's Poison"), player))
+               rule=lambda state: state.has_any((world.element_items["Fire"], world.element_items["Poison"]), player))
 
 
 def connect_subregions_voa(world: DotDWorld):
@@ -385,7 +385,7 @@ def connect_subregions_dc(world: DotDWorld):
     back_exit.connect(city_gates, "DC Ramparts Back Exit -> City Gates", \
                 rule=lambda state: state.has("Wall Climbing", player))
     city_gates.connect(eol, "DC City Gates -> End of Level", \
-                rule=lambda state: state.has("Spyro's Fire", player))
+                rule=lambda state: state.has(world.element_items["Fire"], player))
 
 
 def connect_subregions_aotg(world: DotDWorld):
@@ -415,11 +415,11 @@ def connect_subregions_row(world: DotDWorld):
     row.connect(trap_road, "RoW Entrance -> Trap Road", \
                 rule=lambda state: state.has("Wall Climbing", player))
     row.connect(upper_right, "RoW Entrance -> Upper Right", \
-                rule=lambda state: state.has_all(("Cynder's Fear", "Wall Climbing", "Spyro's Earth", "Chain Swinging", "Wall Running"), player))
+                rule=lambda state: state.has_all((world.element_items["Fear"], "Wall Climbing", world.element_items["Earth"], "Chain Swinging", "Wall Running"), player))
     row.connect(upper_left, "RoW Entrance -> Upper Left", \
-                rule=lambda state: state.has_all(("Spyro's Fire", "Cynder's Shadow", "Wall Climbing", "Chain Swinging"), player))
+                rule=lambda state: state.has_all((world.element_items["Fire"], world.element_items["Shadow"], "Wall Climbing", "Chain Swinging"), player))
     row.connect(eol, "RoW Entrance -> End of Level", \
-                rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Fear", "Spyro's Electricity", "Cynder's Shadow", "Spyro's Fire", "Chain Swinging", "Spyro's Earth", "Wall Running"), player))
+                rule=lambda state: state.has_all(("Wall Climbing", world.element_items["Fear"], world.element_items["Electricity"], world.element_items["Shadow"], world.element_items["Fire"], "Chain Swinging", world.element_items["Earth"], "Wall Running"), player))
 
 
 def connect_subregions_dam(world: DotDWorld):
@@ -436,7 +436,7 @@ def connect_subregions_dam(world: DotDWorld):
 
     # Requires Shadow to access the weight and wall climbing to get it up to the nearby floodgate
     dam.connect(right_weight_gate, "Dam Entrance -> Right Weight Gate", \
-                rule=lambda state: state.has_all(("Wall Climbing", "Cynder's Shadow"), player))
+                rule=lambda state: state.has_all(("Wall Climbing", world.element_items["Shadow"]), player))
 
 
 def connect_subregions_destroyer(world: DotDWorld):

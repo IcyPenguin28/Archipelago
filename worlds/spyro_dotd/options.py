@@ -20,6 +20,8 @@ from Options import Choice, OptionGroup, PerGameCommonOptions, DeathLinkMixin, R
 class LearnToClimb(Toggle):
     """
     Neither dragon can climb vines until it is enabled via the "Wall Climbing" item.
+    This functionality extends to large objects that must be held onto and pulled with the chain.
+    Examples of such objects include the raft in Valley of Avalar, the floodgate pistons in the Dam, and the hanging platforms in the Ruins of Warfang.
     """
     display_name = "Learn to Climb"
 
@@ -113,12 +115,12 @@ class LearnFury(Choice):
 # This is in the format "option_name_in_snake_case: OptionClassName"
 @dataclass
 class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
-    # learn_to_climb: LearnToClimb
     # learn_to_wall_run: LearnToWallRun
     shuffle_chapter_order: ShuffleChapterOrder
     shuffled_elements: ShuffledElements
     spyro_elements_handling: SpyroElementsHandling
     cynder_elements_handling: CynderElementsHandling
+    learn_to_climb: LearnToClimb
     learn_fury: LearnFury
     
 

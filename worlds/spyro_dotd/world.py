@@ -46,6 +46,7 @@ class DotDWorld(World):
     
     def generate_early(self):
         self.handle_ut_yamless(None)
+        self.element_items: dict[str, str] = items.get_element_item_map(self)
     
     def handle_ut_yamless(self, slot_data: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
         if not slot_data \
@@ -60,6 +61,9 @@ class DotDWorld(World):
         self.options.death_link.value = slot_data["death_link"]
         self.options.learn_fury.value = slot_data["learn_fury"]
         self.options.shuffled_elements.value = slot_data["shuffled_elements"]
+        self.options.spyro_elements_handling.value = slot_data["spyro_elements_handling"]
+        self.options.spyro_elements_handling.value = slot_data["cynder_elements_handling"]
+        self.options.learn_to_climb.value = slot_data["learn_to_climb"]
         self.options.shuffle_chapter_order.value = slot_data["shuffle_chapter_order"]
         self.chapter_order = [str(x) for x in slot_data["chapter_order"]]
 
@@ -79,6 +83,7 @@ class DotDWorld(World):
     
     def create_items(self) -> None:
         items.create_all_items(self)
+        items.push_unshuffled_element_items(self)
 
     # Our world class must also have a create_item function that can create any one of our items by name at any time.
     # We also put this in a different file, teh same one that create_items is in.
@@ -99,12 +104,12 @@ class DotDWorld(World):
         # If you need access to the player's chosen options on the client side, there is a helper for that.
         slot_data = self.options.as_dict(
             "death_link",
-            # "learn_to_climb",
             # "learn_to_wallrun",
             "shuffle_chapter_order",
             "shuffled_elements",
             "spyro_elements_handling",
             "cynder_elements_handling",
+            "learn_to_climb",
             "learn_fury"
         )
 
