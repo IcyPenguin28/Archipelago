@@ -97,7 +97,8 @@ DEFAULT_ITEM_CLASSIFICATIONS = {
     "Cynder's Wind": ItemClassification.progression,
     "Cynder's Shadow": ItemClassification.progression,
     "Chain Swinging": ItemClassification.progression,
-    "Wall Climbing": ItemClassification.progression
+    "Wall Climbing": ItemClassification.progression,
+    "Wall Running": ItemClassification.progression
 }
 
 ELEMENT_TO_ITEM_NAME = {
@@ -181,8 +182,8 @@ def create_all_items(world: DotDWorld) -> None:
     # NOTE: Some items may only exist if the player enables certain options
     if world.options.learn_to_climb:
         itempool.append(world.create_item("Wall Climbing"))
-    # if world.options.learn_to_wall_run:
-    #     itempool.append(world.create_item("Wall Running"))
+    if world.options.learn_to_wall_run:
+        itempool.append(world.create_item("Wall Running"))
     if world.options.learn_fury.current_key == "both_together":
         itempool.append(world.create_item("Dragon's Fury"))
     elif world.options.learn_fury.current_key == "both_separate":

@@ -16,7 +16,7 @@ from .items import DotDItem, ITEM_NAME_TO_ID
 from .options import DotDOptions
 from .world import DotDWorld
 from .locations import LOCATION_FLAG_ADDRESS_TO_NAME, LOCATION_NAME_TO_ID
-from .pcsx2_interface.pine import Pine
+from .pcsx2_interface.pine import Pine, struct
 # from .interface import install_element_rando_hook
 
 import logging
@@ -313,6 +313,13 @@ class MemoryReader:
     def write_bytes(self, ps2_address: int, data: bytes) -> bool:
         return self._safe_op(lambda: self.client.write_bytes(ps2_address, data)) is not None
 
+    def read_float(self, ps2_address: int) -> Optional[float]:
+        data = self.read_bytes(ps2_address, 4)
+        return struct.unpack("<f", data)[0] if data is not None else None
+
+    def write_float(self, ps2_address: int, value: float) -> bool:
+        return self._safe_op(lambda: self.client.write_float(ps2_address, value))
+
     def read_pointer(self, ps2_address: int) -> Optional[int]:
         address = self.read_u32(ps2_address)
         return address if address is not None and address > 0x00100000 and address < 0x1FFFFFFD else None
@@ -364,6 +371,7 @@ class DotDContext(CommonContext):
         self._session_blue_gems_at_connect: int = 0
         self._learned_fury: list[bool] = [True, True] # index 0 = Spyro, 1 = Cynder
         self._learned_wall_climbing = True
+        self._learned_wall_running = True
 
         # Armor names received — set-based, naturally idempotent
         self._received_armor: Set[str] = set()
@@ -376,9 +384,11 @@ class DotDContext(CommonContext):
         self.learn_fury = 0
         self.shuffled_elements = set()
         self.learn_wall_climbing = False
+        self.learn_wall_running = False
 
-        # Prepare to fire an async task to check for when wall climbing can be learned
+        # Prepare to fire an async task to check for when wall climbing/running can be learned
         self._wall_climbing_learner_task: Optional[asyncio.Task] = None
+        self._wall_running_learner_task: Optional[asyncio.Task] = None
 
         # Whether game-version check has passed
         self._game_version_ok: bool = False
@@ -460,9 +470,15 @@ class DotDContext(CommonContext):
             if self.learn_fury == 0:
                 self._learned_fury = [True, True]
 
-            self.learn_wall_climbing = bool(args["slot_data"].get("learn_wall_climbing", 0))
+            # Wall Climbing
+            self.learn_wall_climbing = bool(args["slot_data"].get("learn_to_climb", 0))
             if not self.learn_wall_climbing:
                 self._learned_wall_climbing = True
+
+            # Wall Running
+            self.learn_wall_running = bool(args["slot_data"].get("learn_to_wall_run", 0))
+            if not self.learn_wall_running:
+                self._learned_wall_running = True
 
             # Handle Shuffled Elements
             # Since elements can be already known on connection, 
@@ -508,10 +524,18 @@ class DotDContext(CommonContext):
         self._received_armor = set()
         self._num_chapters_unlocked = 0
         self._learned_fury = [False, False] # accumulate needs to restore the flags from false
+
+        # Handle Wall Climbing
         self._learned_wall_climbing = False
         if self._wall_climbing_learner_task and not self._wall_climbing_learner_task.done():
             self._wall_climbing_learner_task.cancel()
         self._wall_climbing_learner_task = None
+
+        # Handle Wall Running
+        self._learned_wall_running = False
+        if self._wall_running_learner_task and not self._wall_running_learner_task.done():
+            self._wall_running_learner_task.cancel()
+        self._wall_running_learner_task = None
 
         # Seed with the non-shuffled baseline so a full resync starts from
         # the correct "everything not in the shuffle pool" state
@@ -568,6 +592,12 @@ class DotDContext(CommonContext):
                 if self._wall_climbing_learner_task and not self._wall_climbing_learner_task.done():
                     self._wall_climbing_learner_task.cancel()
                 self._wall_climbing_learner_task = asyncio.create_task(wall_climbing_learner(self), name="wall climbing learner")
+        elif item_name == "Wall Running":
+            if not self._learned_wall_running:
+                self._learned_wall_running = True
+                if self._wall_running_learner_task and not self._wall_running_learner_task.done():
+                    self._wall_running_learner_task.cancel()
+                self._wall_running_learner_task = asyncio.create_task(wall_running_learner(self), name="wall running learner")
             
 
         # Instant consumables (Small Health Gem / Small Mana Gem) are handled inside
@@ -1039,6 +1069,12 @@ async def level_watcher(ctx: DotDContext):
                         ctx.memory.write_bytes(ctx.addr_spyro_hero + 0xEC8, b"\x01")
                         ctx.memory.write_bytes(ctx.addr_cynder_hero + 0xEC8, b"\x01")
 
+                    # If wall running has not yet been learned, set these bytes at offsets +0x9E0 from the base hero pointers to decimal 9,999
+                    # This will disable wall running for the rest of the level
+                    if not ctx._learned_wall_running and ctx.addr_spyro_hero and ctx.addr_cynder_hero:
+                        ctx.memory.write_float(ctx.addr_spyro_hero + 0x9E0, 9999.0)
+                        ctx.memory.write_float(ctx.addr_cynder_hero + 0x9E0, 9999.0)
+
                 if level_name == "Main Menu":
                     menu_value = ctx.memory.read_bytes(ADDR_MENU_VALUE, 1) or b"\x00"
 
@@ -1075,6 +1111,21 @@ async def wall_climbing_learner(ctx: DotDContext):
 
     ctx.memory.write_bytes(ctx.addr_spyro_hero + 0xEC8, b"\x18")
     ctx.memory.write_bytes(ctx.addr_cynder_hero + 0xEC8, b"\x18")
+
+
+async def wall_running_learner(ctx: DotDContext):
+    """
+    Waits until the game signals it's safe to re-enable wall running
+    (Hero pointers exist and are not stale), then flips it to the vanilla of decimal 0.25. If a reset happens
+    mid-wait, _reset_item_state() cancels this task directly.
+    """
+    while ctx.addr_spyro_hero is None or ctx.addr_cynder_hero is None:
+        await asyncio.sleep(0.1)
+        continue
+
+    # TODO: Write float instead unless u32 works.
+    ctx.memory.write_float(ctx.addr_spyro_hero + 0x9E0, 0.25)
+    ctx.memory.write_float(ctx.addr_cynder_hero + 0x9E0, 0.25)
 
 # ---------------------------------------------------------------------------
 # Entry point

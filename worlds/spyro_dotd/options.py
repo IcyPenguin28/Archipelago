@@ -115,12 +115,12 @@ class LearnFury(Choice):
 # This is in the format "option_name_in_snake_case: OptionClassName"
 @dataclass
 class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
-    # learn_to_wall_run: LearnToWallRun
     shuffle_chapter_order: ShuffleChapterOrder
     shuffled_elements: ShuffledElements
     spyro_elements_handling: SpyroElementsHandling
     cynder_elements_handling: CynderElementsHandling
     learn_to_climb: LearnToClimb
+    learn_to_wall_run: LearnToWallRun
     learn_fury: LearnFury
     
 

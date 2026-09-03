@@ -64,6 +64,7 @@ class DotDWorld(World):
         self.options.spyro_elements_handling.value = slot_data["spyro_elements_handling"]
         self.options.spyro_elements_handling.value = slot_data["cynder_elements_handling"]
         self.options.learn_to_climb.value = slot_data["learn_to_climb"]
+        self.options.learn_to_wall_run = slot_data["learn_to_wall_run"]
         self.options.shuffle_chapter_order.value = slot_data["shuffle_chapter_order"]
         self.chapter_order = [str(x) for x in slot_data["chapter_order"]]
 
@@ -104,12 +105,12 @@ class DotDWorld(World):
         # If you need access to the player's chosen options on the client side, there is a helper for that.
         slot_data = self.options.as_dict(
             "death_link",
-            # "learn_to_wallrun",
             "shuffle_chapter_order",
             "shuffled_elements",
             "spyro_elements_handling",
             "cynder_elements_handling",
             "learn_to_climb",
+            "learn_to_wallrun",
             "learn_fury"
         )
 
