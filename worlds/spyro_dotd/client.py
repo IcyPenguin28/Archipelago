@@ -13,6 +13,7 @@ from CommonClient import CommonContext, ClientCommandProcessor, server_loop, gui
 
 
 from .items import DotDItem, ITEM_NAME_TO_ID
+from .elite_elements import DEFAULT_ELITE_ELEMENTS
 from .options import DotDOptions
 from .world import DotDWorld
 from .locations import LOCATION_FLAG_ADDRESS_TO_NAME, LOCATION_NAME_TO_ID
@@ -172,36 +173,6 @@ ARMOR_NAME_TO_ADDRESS = {
     "Cynder Tail Fury": ADDR_CYNDER_TAIL_FURY
 }
 
-LEVEL_ID_TO_INDEX = {
-    b"\x0A": 0,
-    b"\x14": 1,
-    b"\x1E": 2,
-    b"\x28": 3,
-    b"\x32": 4,
-    b"\x3C": 5,
-    b"\x50": 6,
-    b"\x5A": 7,
-    b"\x64": 8,
-    b"\x6E": 9,
-    b"\x78": 10, 
-}
-
-INDEX_TO_LEVEL_ID = {v: k for k, v in LEVEL_ID_TO_INDEX.items()}
-
-LEVEL_NAME_TO_ID = {
-    "Catacombs":          b"\x0A",
-    "Twilight Falls":     b"\x14",
-    "Valley of Avalar":   b"\x1E",
-    "Dragon City":        b"\x28",
-    "Attack of the Golem":b"\x32",
-    "Ruins of Warfang":   b"\x3C",
-    "The Dam":            b"\x50",
-    "The Destroyer":      b"\x5A",
-    "Burned Lands":       b"\x64",
-    "Floating Islands":   b"\x6E",
-    "Malefor's Lair":     b"\x78",
-}
-
 LEVEL_ID_TO_NAME = {
     #Matches the LVL### folders, 70 doesn't exist
     0:      "Main Menu",
@@ -251,8 +222,90 @@ EXPECTED_GAME_ID = "SLUS-21820"
 ADDR_ARMOR_OWNERSHIP_CHECK_HOOK = 0x0039C2CC
 ADDR_ARMOR_OWNERSHIP_CHECK_ROUTINE = 0x01FFED38
 
+# Enemy data
+ENEMY_NAME_TO_ID = {
+    "Grublin":      b"\x00",
+    "Grublin Fly":  b"\x01",
+    "Hero Grublin": b"\x02",
+    "Crossbow Orc": b"\x03",
+    "Axe Orc":      b"\x04",
+    "Hero Orc":     b"\x05",
+    "Troll":        b"\x06",
+    "Shadow":       b"\x07",
+    "Wyvern":       b"\x08"
+}
 
-# ADDR_SPYRO_FLIGHT_MIRROR_HOOK_W1 = 
+LEVEL_NAME_TO_ELITES = {
+    "The Catacombs": ["Grublin"],
+    "Twilight Falls": ["Grublin Fly"],
+    "Valley of Avalar": ["Axe Orc"],
+    "Ruins of Warfang": ["Troll"],
+    "The Dam": ["Crossbow Orc"],
+    "Burned Lands": ["Hero Orc"],
+    "Floating Islands": ["Wyvern", "Hero Grublin"],
+}
+
+# These are base durabilities manually calculated in a way so that the masks can be broken in solo with lvl 1 elements, no armors and base mana
+# Masks are very weird and somehow take more damage from dmg/second attacks like Dragon Fire every frame (Elite itself takes normal damage)
+# They also take damage while the enemy is blocking, even if the enemy itself doesn't
+# Most Elites have green gem clusters nearby so these durabilities could be buffed a little
+ELITE_ELEMENT_TO_BASE_DURABILITY = {
+    "Fire": 900.0,
+    "Ice": 600.0,
+    "Earth": 500.0,
+    "Electricity": 200.0,
+    "Poison": 500.0,
+    "Shadow": 1000.0,
+    "Fear": 1000.0,
+    "Wind": 500.0
+}
+
+ELITE_ELEMENT_TO_MASK_COLOR = {
+    "Fire": bytes([0xAF, 0x4F, 0x00]),
+    "Ice": bytes([0x40, 0x7F, 0xFF]),
+    "Earth": bytes([0x00, 0x67, 0x22]),
+    "Electricity": bytes([0xAF, 0x96, 0x00]),
+    "Poison": bytes([0x55, 0x99, 0x00]),
+    "Shadow": bytes([0x00, 0x00, 0x24]),
+    "Fear": bytes([0x69, 0x00, 0x00]),
+    "Wind": bytes([0x69, 0x69, 0x8F])
+}
+
+# Unfortunately, most Elite glows do not have the correct flags that allow to display darker colors (they get more transparent instead)
+# These flags are read when deserializing the object, but editing those flags once the object has been deserialized does nothing,
+# which is a shame because otherwise the fix would have been very easy
+ELITE_ELEMENT_TO_GLOW_COLOR = {
+    "Fire": bytes([0xFF, 0xAF, 0x00, 0xBF]),
+    "Ice": bytes([0x7F, 0xCF, 0xFF, 0x7F]),
+    "Earth": bytes([0x00, 0xFF, 0x00, 0x7F]),
+    "Electricity": bytes([0xFF, 0xF4, 0x00, 0x8F]),
+    "Poison": bytes([0xBB, 0xFF, 0x00, 0x9F]),
+    "Shadow": bytes([0x00, 0x00, 0xFF, 0x9F]),   #Can't do black so blue it is
+    "Fear": bytes([0xFF, 0x00, 0x00, 0x8F]),
+    "Wind": bytes([0xFF, 0xFF, 0xFF, 0x9F])
+}
+
+ELITE_NAME_TO_GLOW_SIZE = {
+    "Grublin":      3.0,
+    "Grublin Fly":  3.0,
+    "Axe Orc":      5.0,
+    "Troll":        9.0,
+    "Crossbow Orc": 4.0,
+    "Hero Orc":     8.0
+}
+
+ELEMENT_NAME_TO_ID = {
+    "Fire": 0,
+    "Ice": 1,
+    "Earth": 2,
+    "Electricity": 3,
+    "Poison": 4,
+    "Shadow": 5,
+    "Fear": 6,
+    "Wind": 7,
+    "Purple Fury": 8,
+    "Dark Fury": 9
+}
 
 class MemoryReader:
     def __init__(self):
@@ -344,6 +397,8 @@ class DotDContext(CommonContext):
             "Malefor's Lair"
         ]
 
+        self.elite_elements: dict[str, list[str]] = DEFAULT_ELITE_ELEMENTS.copy()
+
         self.current_level = None
         self.last_menu_value = b"\x00"
 
@@ -385,6 +440,7 @@ class DotDContext(CommonContext):
         self.shuffled_elements = set()
         self.learn_wall_climbing = False
         self.learn_wall_running = False
+        self.random_elite_elements = 0
 
         # Prepare to fire an async task to check for when wall climbing/running can be learned
         self._wall_climbing_learner_task: Optional[asyncio.Task] = None
@@ -486,6 +542,15 @@ class DotDContext(CommonContext):
                 scratch_addr = ELEMENT_NAME_TO_UNLOCKED_ADDRESS.get(element)
                 if scratch_addr:
                     self.memory.write_bytes(scratch_addr, b"\x01")
+
+            # Random Elite Elements
+            self.random_elite_elements = args["slot_data"].get("random_elite_elements", 0)
+            elems = args["slot_data"].get("elite_elements")
+            if elems:
+                self.elite_elements = elems
+
+            # Set current level to None to reinit the level data / refetch pointers
+            self.current_level = None
 
         elif cmd == "ReceivedItems":
             try:
@@ -880,6 +945,113 @@ class DotDContext(CommonContext):
             print(f"Could not get Hero pointers.")
         return success
 
+ # ------------------------------------------------------------------
+    # Elite Enemy stuff
+    # ------------------------------------------------------------------
+    def edit_elite_data(self, elite_name: str) -> bool:
+        """
+        Edit data for the specified Elite enemy by first following a pointer chain
+        to find the CKS08EnemyElementPool objects corresponding to the enemy type of the Elite,
+        and then calling edit_mask_data for each object.
+        On other versions, these objects are also used for decorative parts and armors that can be broken,
+        however those were removed on PS2 and only the Elite masks remain.
+        """
+        success = False
+        # Base pointer to CKS08GrpEnemy is in a CKS08GameManager object, which is a global object (in GAME.KP2, so static)
+        # This pointer is always null on the main menu, during loading screens and in Malefor's Lair (no enemies)
+        # CKS08GameManager -> CKGrpS08Enemy -> CKCommonBaseGroup -> CKGrpS08PoolEnemy -> CKS08EnemyElementPool[]
+        if (addr_ckgrps08enemy := self.memory.read_pointer(ADDR_PTR_CKGRPS08ENEMY)):
+            if (addr_ckcommonbasegroup := self.memory.read_pointer(addr_ckgrps08enemy + 0x2C)):
+                addr_ckgrps08poolenemy = self.memory.read_pointer(addr_ckcommonbasegroup + 0x18)
+                print(f"CKGrpS08Enemy address: {hex(addr_ckgrps08enemy)}")
+                print(f"CKCommonBaseGroup address: {hex(addr_ckcommonbasegroup)}")
+
+                while (addr_ckgrps08poolenemy and success == False):
+                    # Check enemy type and the array of CKS08EnemyElementPool objects
+                    if (self.memory.read_bytes(addr_ckgrps08poolenemy + 0x2C, 1) == ENEMY_NAME_TO_ID.get(elite_name)
+                            and (addr_array_cks08enemyelementpool := self.memory.read_pointer(addr_ckgrps08poolenemy + 0x3C))
+                            and (array_size := self.memory.read_u32(addr_ckgrps08poolenemy + 0x44)) is not None):
+                        print(f"Enemy Pool for {elite_name} found at {hex(addr_ckgrps08poolenemy)}")
+                        masks = []
+                        for i in range(array_size):
+                            if (mask := self.memory.read_pointer(addr_array_cks08enemyelementpool + (i * 4))):
+                                if self.memory.read_u32(mask) == CLASS_PTR_CKS08ENEMYELEMENTPOOL:
+                                    masks.append(mask)
+
+                        for i, mask in enumerate(masks):
+                            j = 0 if len(self.elite_elements.get(elite_name)) <= i else i
+                            if (success := self.edit_mask_data(mask, elite_name, self.elite_elements.get(elite_name)[j])) == False:
+                                break
+                    # Enemy pools have a pointer to the next pool (null if last)
+                    addr_ckgrps08poolenemy = self.memory.read_pointer(addr_ckgrps08poolenemy + 0x14)
+
+        if not success:
+            print(f"Could not properly edit Elite data for {elite_name}.")
+        return success
+
+    def edit_mask_data(self, addr_cks08enemyelementpool: int, elite_name: str, element_name: str) -> bool:
+        """
+        Overwrite data for the specified CKS08EnemeyElementPool (mask) based on the element.
+        This includes the durability, wrong element damage multiplier, element ID,
+        mask glow size and color and color of the mask geometry itself.
+        """
+        success = False
+        # CKS08EnemyElementPool -> CKS08EnemyElement[] -> CKS08EnemyElement -> CGlowNodeFX / CNode
+        # While technically an array of CKS08EnemyElement objects, the size is always 1, so we can just take the first element
+        if (addr_array := self.memory.read_pointer(addr_cks08enemyelementpool + 0x4)):
+            if (addr_cks08enemyelement := self.memory.read_pointer(addr_array)):
+                if (addr_cglownodefx := self.memory.read_pointer(addr_cks08enemyelement + 0x5C)):
+                    # Element ID
+                    self.memory.write_u32(addr_cks08enemyelementpool + 0x14, ELEMENT_NAME_TO_ID.get(element_name))
+                    print(f"Set element for mask at {hex(addr_cks08enemyelementpool)} to {element_name} for {elite_name}.")
+                        
+                    # Mask durability
+                    durability = ELITE_ELEMENT_TO_BASE_DURABILITY.get(element_name)
+                    self.memory.write_float(addr_cks08enemyelementpool + 0x18, durability)
+                    print(f"Set base durability to {durability} for {element_name} mask.")
+                    
+                    # Damage multiplier for wrong element and melee
+                    wrong_elem_multipler = durability / 10000
+                    self.memory.write_float(addr_cks08enemyelementpool + 0x1C, wrong_elem_multipler)
+                    print(f"Set wrong element damage multiplier to {wrong_elem_multipler} for {element_name} mask.")
+                    
+                    # Glow size and color
+                    # Unfortunately, the glows in Floating Islands are just too broken so we won't bother with those
+                    if elite_name != "Wyvern" and elite_name != "Hero Grublin":
+                        self.memory.write_bytes(addr_cglownodefx + 0x48, ELITE_ELEMENT_TO_GLOW_COLOR.get(element_name))
+                        self.memory.write_float(addr_cglownodefx + 0x40, ELITE_NAME_TO_GLOW_SIZE.get(elite_name))
+                        print(f"Edited glow data for {elite_name}'s {element_name} mask.")
+
+                    # Mask geometry color
+                    if (addr_cnode := self.memory.read_pointer(addr_cks08enemyelement + 0x4C)):
+                        success = self.edit_cnode_texture(addr_cnode, 0, ELITE_ELEMENT_TO_MASK_COLOR.get(element_name))
+
+        if not success:
+            print(f"Could not properly edit {element_name} mask data for {elite_name}.")
+        return success
+
+    def edit_cnode_texture(self, addr_cnode: int, ptr_texture: int, color: bytes = bytes([0xFF, 0xFF, 0xFF])) -> bool:
+        """
+        Edit the texture pointer of a CNode object and its color blend (defaults to white).
+        The game is perfectly fine with null texture pointers and will render a solid
+        color based on the color blend value.
+        """
+        success = False
+        # CNode -> CGeometry -> CMaterial -> something related to texture -> the texture
+        # The RGB value for the color blend is in the CGeometry object
+        if self.memory.read_u32(addr_cnode) == CLASS_PTR_CNODE:
+            if (addr_cgeometry := self.memory.read_pointer(addr_cnode + 0x1C)):
+                if (addr_cmaterial := self.memory.read_pointer(addr_cgeometry + 0x24)):
+                    if (addr_something_texture := self.memory.read_pointer(addr_cmaterial + 0x4)):
+                        self.memory.write_u32(addr_something_texture, ptr_texture)
+                        self.memory.write_bytes(addr_cgeometry + 0x20, color)
+                        success = True
+                        print(f"Set texture pointer {hex(ptr_texture)} and color {bytes.hex(color)} for CNode object at {hex(addr_cnode)}.")
+
+        if not success:
+            print(f"Could not edit CNode texture at address {hex(addr_cnode)}.")
+        return success
+
 
 # ---------------------------------------------------------------------------
 # Globals (gem totals mirrored into memory by setter tasks)
@@ -1059,9 +1231,9 @@ async def level_watcher(ctx: DotDContext):
                     ctx.update_hero_pointers()
 
                     # Edit Elites data
-                    # if ctx.random_elite_elements != 0 and (elites := LEVEL_NAME_TO_ELITES.get(level_name)):
-                    #     for elite_name in elites:
-                    #         ctx.edit_elite_data(elite_name)
+                    if ctx.random_elite_elements != 0 and (elites := LEVEL_NAME_TO_ELITES.get(level_name)):
+                        for elite_name in elites:
+                            ctx.edit_elite_data(elite_name)
 
                     # If wall climbing has not yet been learned, set these bytes at offsets +0xEC8 from the base hero pointers to 0x01
                     # This will disable wall climbing for the rest of the level

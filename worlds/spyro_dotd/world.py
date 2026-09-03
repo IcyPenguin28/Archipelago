@@ -5,7 +5,7 @@ from typing import Any, Optional
 from worlds.AutoWorld import World
 
 # Imports of your world's files must be relative
-from . import items, locations, options, regions, rules, web_world
+from . import items, locations, options, regions, rules, web_world, elite_elements
 
 class DotDWorld(World):
     """
@@ -36,6 +36,8 @@ class DotDWorld(World):
     # For chapter order shuffling
     chapter_order: list[str]
 
+    # For Elite elements rando
+    elite_elements: dict[str, list[str]]
 
     # UniversalTracker Support
     ut_can_gen_without_yaml = True
@@ -47,6 +49,7 @@ class DotDWorld(World):
     def generate_early(self):
         self.handle_ut_yamless(None)
         self.element_items: dict[str, str] = items.get_element_item_map(self)
+        elite_elements.get_elite_elements(self)
     
     def handle_ut_yamless(self, slot_data: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
         if not slot_data \
@@ -67,6 +70,8 @@ class DotDWorld(World):
         self.options.learn_to_wall_run.value = slot_data["learn_to_wall_run"]
         self.options.shuffle_chapter_order.value = slot_data["shuffle_chapter_order"]
         self.chapter_order = [str(x) for x in slot_data["chapter_order"]]
+        self.options.random_elite_elements.value = slot_data["random_elite_elements"]
+        self.elite_elements = slot_data["elite_elements"]
 
         return slot_data
 
@@ -112,10 +117,12 @@ class DotDWorld(World):
             "cynder_elements_handling",
             "learn_to_climb",
             "learn_to_wall_run",
-            "learn_fury"
+            "learn_fury",
+            "random_elite_elements"
         )
 
         slot_data["chapter_order"] = self.chapter_order
+        slot_data["elite_elements"] = self.elite_elements
 
         return slot_data
     
@@ -123,3 +130,9 @@ class DotDWorld(World):
         spoiler_handle.write(f"\nChapter Order ({self.multiworld.get_player_name(self.player)}):\n")
         for i, chapter in enumerate(self.chapter_order):
             spoiler_handle.write(f"  Chapter {i + 1}: {chapter}\n")
+
+        if self.options.random_elite_elements.value != 0:
+            spoiler_handle.write(f"\nElite Elements ({self.multiworld.get_player_name(self.player)}):\n")
+            for name, elements in self.elite_elements.items():
+                spoiler_handle.write(f"  {name}:")
+                spoiler_handle.write(f" {", ".join(elements)}\n")

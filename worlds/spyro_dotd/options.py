@@ -110,6 +110,25 @@ class LearnFury(Choice):
 
     default = option_disabled
 
+class RandomEliteElements(Choice):
+    """
+    All 8 Elite Enemies will have the element required to break their masks randomized, with the color of the mask matching the newly randomized element.
+
+    Disabled: Elites will keep their vanilla elements and masks.
+
+    Random Normal: Elites will have a random element for each of their possible masks, with no duplicates.
+    This means that Elites that had 2 or 3 possible elements in vanilla will have 2 or 3 different random possible elements.
+
+    Random Unique: Each Elite will have their own unique element. All 8 normal elements will be required to defeat all Elite Enemies.
+    """
+    display_name = "Random Elite Elements"
+
+    option_disabled = 0
+    option_random_normal = 1
+    option_random_unique = 2
+
+    default = option_disabled
+
 
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
 # This is in the format "option_name_in_snake_case: OptionClassName"
@@ -122,6 +141,7 @@ class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
     learn_to_climb: LearnToClimb
     learn_to_wall_run: LearnToWallRun
     learn_fury: LearnFury
+    random_elite_elements: RandomEliteElements
     
 
 # If we want to group our optionps by similar type we can do so as well. This looks nice on the website.
