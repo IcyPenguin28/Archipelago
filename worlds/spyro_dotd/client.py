@@ -33,8 +33,6 @@ ADDR_CYNDER_CURRENT_MANA = 0x9FEB00
 ADDR_CYNDER_BASE_MANA = 0x9FEB04
 ADDR_SPYRO_CURRENT_FURY = 0x9FEB08
 ADDR_CYNDER_CURRENT_FURY = 0x9FEB0C
-ADDR_SPYRO_CONTROLLER = 0x98C195
-ADDR_CYNDER_CONTROLLER = 0x98C196
 ADDR_HEALTH_GEMS_COLLECTED = 0x9FEB6C
 ADDR_MANA_GEMS_COLLECTED = 0x9FEB7C
 ADDR_BONUS_HP_PER_UPGRADE = 0x9FEADC
@@ -387,7 +385,7 @@ class DotDContext(CommonContext):
         self.learn_wall_running = False
 
         # Prepare to fire an async task to check for when wall climbing/running can be learned
-        self._wall_climbing_learner_task: Optional[asyncio.Task] = None
+        self._wall_climbing_setter_task: Optional[asyncio.Task] = None
         self._wall_running_learner_task: Optional[asyncio.Task] = None
 
         # Whether game-version check has passed
@@ -524,12 +522,7 @@ class DotDContext(CommonContext):
         self._received_armor = set()
         self._num_chapters_unlocked = 0
         self._learned_fury = [False, False] # accumulate needs to restore the flags from false
-
-        # Handle Wall Climbing
         self._learned_wall_climbing = False
-        if self._wall_climbing_learner_task and not self._wall_climbing_learner_task.done():
-            self._wall_climbing_learner_task.cancel()
-        self._wall_climbing_learner_task = None
 
         # Handle Wall Running
         self._learned_wall_running = False
@@ -587,11 +580,7 @@ class DotDContext(CommonContext):
             # Item is an individual element
             self._learned_elements.add(ITEM_NAME_TO_ELEMENT[item_name])
         elif item_name == "Wall Climbing":
-            if not self._learned_wall_climbing:
-                self._learned_wall_climbing = True
-                if self._wall_climbing_learner_task and not self._wall_climbing_learner_task.done():
-                    self._wall_climbing_learner_task.cancel()
-                self._wall_climbing_learner_task = asyncio.create_task(wall_climbing_learner(self), name="wall climbing learner")
+            self._learned_wall_climbing = True
         elif item_name == "Wall Running":
             if not self._learned_wall_running:
                 self._learned_wall_running = True
@@ -792,9 +781,9 @@ class DotDContext(CommonContext):
         self.kill_player()
 
     def kill_player(self):
-        if self.memory.read_bytes(ADDR_SPYRO_CONTROLLER, 1) == b"\x00":
+        if self.addr_spyro_hero and self.memory.read_bytes(self.addr_spyro_hero + 0x25, 1) == b"\x00":
             self.memory.write_u32(ADDR_SPYRO_CURRENT_HP, 0)
-        elif self.memory.read_bytes(ADDR_CYNDER_CONTROLLER, 1) == b"\x00":
+        elif self.addr_cynder_hero and self.memory.read_bytes(self.addr_cynder_hero + 0x25, 1) == b"\x01":
             self.memory.write_u32(ADDR_CYNDER_CURRENT_HP, 0)
         self.player_dead = True
 
@@ -804,40 +793,36 @@ class DotDContext(CommonContext):
     def handle_receive_health_gem_s(self):
         # Base hp values are 300 and each health upgrade adds 100 max health in vanilla
         # Could be changed with a setting in the future by overwriting base and upgrade values in memory
-        if self.memory.read_bytes(ADDR_SPYRO_CONTROLLER, 1) == b"\x00":
-            spyro_max_hp = 300 + 100 * (health_gems_collected // 4)
-            spyro_hp = self.memory.read_u32(ADDR_SPYRO_CURRENT_HP) or 0
-            spyro_hp += 15
-            if spyro_hp > spyro_max_hp:
-                spyro_hp = spyro_max_hp
-            self.memory.write_u32(ADDR_SPYRO_CURRENT_HP, spyro_hp)
+        spyro_max_hp = 300 + 100 * (health_gems_collected // 4)
+        spyro_hp = self.memory.read_u32(ADDR_SPYRO_CURRENT_HP) or 0
+        spyro_hp += 15
+        if spyro_hp > spyro_max_hp:
+            spyro_hp = spyro_max_hp
+        self.memory.write_u32(ADDR_SPYRO_CURRENT_HP, spyro_hp)
 
-        if self.memory.read_bytes(ADDR_CYNDER_CONTROLLER, 1) == b"\x00":
-            cynder_max_hp = 300 + 100 * (health_gems_collected // 5)
-            cynder_hp = self.memory.read_u32(ADDR_CYNDER_CURRENT_HP) or 0
-            cynder_hp += 15
-            if cynder_hp > cynder_max_hp:
-                cynder_hp = cynder_max_hp
-            self.memory.write_u32(ADDR_CYNDER_CURRENT_HP, cynder_hp)
+        cynder_max_hp = 300 + 100 * (health_gems_collected // 5)
+        cynder_hp = self.memory.read_u32(ADDR_CYNDER_CURRENT_HP) or 0
+        cynder_hp += 15
+        if cynder_hp > cynder_max_hp:
+            cynder_hp = cynder_max_hp
+        self.memory.write_u32(ADDR_CYNDER_CURRENT_HP, cynder_hp)
 
     def handle_receive_mana_gem_s(self):
         # Base mana values are 300 and each mana upgrade adds 100 max mana in vanilla
         # Could be changed with a setting in the future by overwriting base and upgrade values in memory
-        if self.memory.read_bytes(ADDR_SPYRO_CONTROLLER, 1) == b"\x00":
-            spyro_max_mana = 300 + 100 * (mana_gems_collected // 5)
-            spyro_mana = self.memory.read_u32(ADDR_SPYRO_CURRENT_MANA) or 0
-            spyro_mana += 15
-            if spyro_mana > spyro_max_mana:
-                spyro_mana = spyro_max_mana
-            self.memory.write_u32(ADDR_SPYRO_CURRENT_MANA, spyro_mana)
+        spyro_max_mana = 300 + 100 * (mana_gems_collected // 5)
+        spyro_mana = self.memory.read_u32(ADDR_SPYRO_CURRENT_MANA) or 0
+        spyro_mana += 15
+        if spyro_mana > spyro_max_mana:
+            spyro_mana = spyro_max_mana
+        self.memory.write_u32(ADDR_SPYRO_CURRENT_MANA, spyro_mana)
 
-        if self.memory.read_bytes(ADDR_CYNDER_CONTROLLER, 1) == b"\x00":
-            cynder_max_mana = 300 + 100 * (mana_gems_collected // 4)
-            cynder_mana = self.memory.read_u32(ADDR_CYNDER_CURRENT_MANA) or 0
-            cynder_mana += 15
-            if cynder_mana > cynder_max_mana:
-                cynder_mana = cynder_max_mana
-            self.memory.write_u32(ADDR_CYNDER_CURRENT_MANA, cynder_mana)
+        cynder_max_mana = 300 + 100 * (mana_gems_collected // 4)
+        cynder_mana = self.memory.read_u32(ADDR_CYNDER_CURRENT_MANA) or 0
+        cynder_mana += 15
+        if cynder_mana > cynder_max_mana:
+            cynder_mana = cynder_max_mana
+        self.memory.write_u32(ADDR_CYNDER_CURRENT_MANA, cynder_mana)
 
     # ------------------------------------------------------------------
     # Goal completion
@@ -926,7 +911,7 @@ async def emulator_watchdog(ctx: DotDContext):
 async def location_watcher(ctx: DotDContext):
     while True:
         try:
-            if not ctx.memory.is_connected or not ctx._game_version_ok:
+            if not ctx.memory.is_connected or not ctx._game_version_ok or not ctx.current_level or ctx.current_level == "Main Menu":
                 await asyncio.sleep(1.0)
                 continue
 
@@ -1022,7 +1007,7 @@ async def goal_watcher(ctx: DotDContext):
     """
     while True:
         try:
-            if ctx.slot and ctx.memory.is_connected and ctx._game_version_ok and not ctx._goal_sent:
+            if ctx.slot and ctx.memory.is_connected and ctx._game_version_ok and not ctx._goal_sent and ctx.current_level and ctx.current_level != "Main Menu":
                 data = ctx.memory.read_bytes(ADDR_FINAL_BOSS_DEFEATED, 1)
                 if data is not None and int.from_bytes(data, byteorder="little") == 1:
                     await ctx.send_goal_completion()
@@ -1048,6 +1033,14 @@ async def level_watcher(ctx: DotDContext):
 
                 if curr_level is None or curr_level == 0xFFFFFFFF:
                     ctx.current_level = None
+                    ctx.addr_spyro_hero = None
+                    ctx.addr_cynder_hero = None
+                    if ctx._wall_climbing_setter_task and not ctx._wall_climbing_setter_task.done():
+                        ctx._wall_climbing_setter_task.cancel()
+                        try:
+                            await ctx._wall_climbing_setter_task
+                        except asyncio.CancelledError:
+                            pass
                     await asyncio.sleep(0.1)
                     continue
 
@@ -1056,24 +1049,24 @@ async def level_watcher(ctx: DotDContext):
                     print(f"[Level Watcher] Current Level : {level_name}")
 
                     # Update the necessary pointers
-                    ctx.update_hero_pointers()
+                    if ctx.update_hero_pointers():
+
+                        # If wall climbing has not yet been learned, create a task to lock the ability
+                        if not ctx._learned_wall_climbing:
+                            if not ctx._wall_climbing_setter_task or ctx._wall_climbing_setter_task.done():
+                                ctx._wall_climbing_setter_task = asyncio.create_task(wall_climbing_setter(ctx), name="wall climbing setter")
+
+                        # If wall running has not yet been learned, set these bytes at offsets +0x9E0 from the base hero pointers to decimal 9,999
+                        # This will disable wall running for the rest of the level
+                        if not ctx._learned_wall_running:
+                            ctx.memory.write_float(ctx.addr_spyro_hero + 0x9E0, 9999.0)
+                            ctx.memory.write_float(ctx.addr_cynder_hero + 0x9E0, 9999.0)
 
                     # Edit Elites data
                     # if ctx.random_elite_elements != 0 and (elites := LEVEL_NAME_TO_ELITES.get(level_name)):
                     #     for elite_name in elites:
                     #         ctx.edit_elite_data(elite_name)
 
-                    # If wall climbing has not yet been learned, set these bytes at offsets +0xEC8 from the base hero pointers to 0x01
-                    # This will disable wall climbing for the rest of the level
-                    if not ctx._learned_wall_climbing and ctx.addr_spyro_hero and ctx.addr_cynder_hero:
-                        ctx.memory.write_bytes(ctx.addr_spyro_hero + 0xEC8, b"\x01")
-                        ctx.memory.write_bytes(ctx.addr_cynder_hero + 0xEC8, b"\x01")
-
-                    # If wall running has not yet been learned, set these bytes at offsets +0x9E0 from the base hero pointers to decimal 9,999
-                    # This will disable wall running for the rest of the level
-                    if not ctx._learned_wall_running and ctx.addr_spyro_hero and ctx.addr_cynder_hero:
-                        ctx.memory.write_float(ctx.addr_spyro_hero + 0x9E0, 9999.0)
-                        ctx.memory.write_float(ctx.addr_cynder_hero + 0x9E0, 9999.0)
 
                 if level_name == "Main Menu":
                     menu_value = ctx.memory.read_bytes(ADDR_MENU_VALUE, 1) or b"\x00"
@@ -1093,24 +1086,26 @@ async def level_watcher(ctx: DotDContext):
         await asyncio.sleep(1.0)
 
 
-async def wall_climbing_learner(ctx: DotDContext):
+async def wall_climbing_setter(ctx: DotDContext):
     """
-    Waits until the game signals it's safe to re-enable wall climbing
-    (Hero+0xEC8 reads 0x19), then flips it to 0x18. If a reset happens
-    mid-wait, _reset_item_state() cancels this task directly.
+    Periodically set the wall climb flag to 1 if not learned, otherwise set it to 0 and end the task.
     """
     while True:
         if ctx.addr_spyro_hero is None or ctx.addr_cynder_hero is None:
             await asyncio.sleep(0.1)
             continue
-        spyro_byte = ctx.memory.read_bytes(ctx.addr_spyro_hero + 0xEC8, 1)
-        cynder_byte = ctx.memory.read_bytes(ctx.addr_cynder_hero + 0xEC8, 1)
-        if spyro_byte == b"\x19" or cynder_byte == b"\x19":
-            break
-        await asyncio.sleep(0.1)
 
-    ctx.memory.write_bytes(ctx.addr_spyro_hero + 0xEC8, b"\x18")
-    ctx.memory.write_bytes(ctx.addr_cynder_hero + 0xEC8, b"\x18")
+        if ctx.memory.read_u32(ctx.addr_spyro_hero) == CLASS_PTR_CKHKS08HERO and ctx.memory.read_u32(ctx.addr_cynder_hero) == CLASS_PTR_CKHKS08HERO:
+            # Restore wall climbing and end the task if learned
+            if ctx._learned_wall_climbing:
+                ctx.memory.write_bytes(ctx.addr_spyro_hero + 0x1678, b"\x00")
+                ctx.memory.write_bytes(ctx.addr_cynder_hero + 0x1678, b"\x00")
+                break
+
+            # Lock wall climbing
+            ctx.memory.write_bytes(ctx.addr_spyro_hero + 0x1678, b"\x01")
+            ctx.memory.write_bytes(ctx.addr_cynder_hero + 0x1678, b"\x01")
+        await asyncio.sleep(0.1)
 
 
 async def wall_running_learner(ctx: DotDContext):
@@ -1119,9 +1114,16 @@ async def wall_running_learner(ctx: DotDContext):
     (Hero pointers exist and are not stale), then flips it to the vanilla of decimal 0.25. If a reset happens
     mid-wait, _reset_item_state() cancels this task directly.
     """
-    while ctx.addr_spyro_hero is None or ctx.addr_cynder_hero is None:
+    while True:
+        # Heroes don't exist on the main menu
+        if ctx.current_level == "Main Menu":
+            break
+
+        if ctx.addr_spyro_hero is not None and ctx.addr_cynder_hero is not None:
+            if ctx.memory.read_u32(ctx.addr_spyro_hero) == CLASS_PTR_CKHKS08HERO and ctx.memory.read_u32(ctx.addr_cynder_hero) == CLASS_PTR_CKHKS08HERO:
+                break
+
         await asyncio.sleep(0.1)
-        continue
 
     # TODO: Write float instead unless u32 works.
     ctx.memory.write_float(ctx.addr_spyro_hero + 0x9E0, 0.25)
