@@ -209,9 +209,6 @@ LEVEL_NAME_TO_SCRATCH_ADDRESS = {
     name: addr + 0x11 for name, addr in LEVEL_NAME_TO_ADDRESS.items()
 }
 
-# Starting flag of the AP Catacombs chapter unlock (in vanilla this is an unused unlock)
-ADDR_NEW_GAME_CATACOMBS_UNLOCK = 0x00A3CE4C
-
 # Expected game ID for NTSC-U version of Dawn of the Dragon
 # PINE's get_game_id() typically returns the disc serial, e.g. "SLUS-21820"
 EXPECTED_GAME_ID = "SLUS-21820"
@@ -496,7 +493,6 @@ class DotDContext(CommonContext):
             # -------------------------------------------------------
             # Handle item state update
             self._reset_item_state()
-            self.apply_patches()
 
             # Handle death link
             self.death_link_enabled = bool(args["slot_data"].get("death_link", 0))
@@ -509,12 +505,6 @@ class DotDContext(CommonContext):
             order = args["slot_data"].get("chapter_order")
             if order:
                 self.chapter_order = order + ["Malefor's Lair"]
-            
-            # Always have the first chapter unlocked
-            self.memory.write_bytes(LEVEL_NAME_TO_SCRATCH_ADDRESS[self.chapter_order[0]], b"\x01")
-            # If the first chapter is Catacombs, we need to set the starting flag so the player doesn't lose the chapter when selecting New Game
-            if self.chapter_order[0] == "Catacombs":
-                self.memory.write_bytes(ADDR_NEW_GAME_CATACOMBS_UNLOCK, b"\x01")
             
             # Handle Learn Fury (current_key is useless. slot_data I believe stores ints instead. Which int means which option is found in options.py)
             self.learn_fury = args["slot_data"].get("learn_fury", 0)
@@ -534,13 +524,6 @@ class DotDContext(CommonContext):
             if not self.learn_wall_running:
                 self._learned_wall_running = True
 
-            # Handle Shuffled Elements
-            # Since elements can be already known on connection, 
-            for element in self._learned_elements:
-                scratch_addr = ELEMENT_NAME_TO_UNLOCKED_ADDRESS.get(element)
-                if scratch_addr:
-                    self.memory.write_bytes(scratch_addr, b"\x01")
-
             # Random Elite Elements
             self.random_elite_elements = args["slot_data"].get("random_elite_elements", 0)
             elems = args["slot_data"].get("elite_elements")
@@ -549,6 +532,20 @@ class DotDContext(CommonContext):
 
             # Set current level to None to reinit the level data / refetch pointers
             self.current_level = None
+
+            if self.memory.is_connected and self.check_game_version():
+                # In case a wrong game was loaded previously so that operations can resume
+                self._game_version_ok = True
+                # Apply patches
+                self.apply_patches()
+                # Always have the first chapter unlocked
+                self.memory.write_bytes(LEVEL_NAME_TO_SCRATCH_ADDRESS[self.chapter_order[0]], b"\x01")
+                # Handle Shuffled Elements
+                # Since elements can be already known on connection, 
+                for element in self._learned_elements:
+                    scratch_addr = ELEMENT_NAME_TO_UNLOCKED_ADDRESS.get(element)
+                    if scratch_addr:
+                        self.memory.write_bytes(scratch_addr, b"\x01")
 
         elif cmd == "ReceivedItems":
             try:
@@ -566,8 +563,9 @@ class DotDContext(CommonContext):
                     print(f"Received {item_name} from player {net_item.player}")
                     self._accumulate_item(item_name)
 
-                # Apply the newly-computed totals to game memory
-                self._flush_item_state()
+                if self.memory.is_connected and self._game_version_ok:
+                    # Apply the newly-computed totals to game memory
+                    self._flush_item_state()
 
             except Exception as e:
                 print(f"on_package encountered exception: {e}")
@@ -816,6 +814,7 @@ class DotDContext(CommonContext):
 
         print("Game patches applied.")
 
+    #NOTE: No longer used
     def restore_scratch_flags(self):
         # Restore armor scratch flags from received armor set
         for armor_name in self._received_armor:
@@ -1052,7 +1051,7 @@ mana_gems_collected = 0
 async def emulator_watchdog(ctx: DotDContext):
     """
     Periodically tries to reconnect to PCSX2 if the connection was lost.
-    Also re-checks the game version and re-applies patches after reconnection.
+    Also re-checks the game version after reconnection.
     """
     while True:
         try:
@@ -1069,11 +1068,6 @@ async def emulator_watchdog(ctx: DotDContext):
                         print("[Watchdog] Wrong game version after reconnect — pausing operations.")
                     else:
                         ctx._game_version_ok = True
-                        # Re-apply patches and restore flags since emulator memory was wiped
-                        if ctx.slot:
-                            ctx.apply_patches()
-                            ctx.restore_scratch_flags()
-                            ctx._flush_item_state()
         except Exception as e:
             print(f"[Watchdog] Unexpected error: {e}")
 
@@ -1197,6 +1191,7 @@ async def level_watcher(ctx: DotDContext):
     Data that was never meant to be overwritten once loaded is already loaded in memory at this point
     and can be freely edited. Changes will last for as long as the level is loaded.
     Pointers to dynamic objects that need to be used later such as the Hero data are also fetched here.
+    Patches and items are restored on the Main Menu when necessary.
     """
     while True:
         try:
@@ -1243,13 +1238,21 @@ async def level_watcher(ctx: DotDContext):
                 if level_name == "Main Menu":
                     menu_value = ctx.memory.read_bytes(ADDR_MENU_VALUE, 1) or b"\x00"
 
-                    # If the menu value is 0x9 (can see New game/Load game) or 0x12 (Load menu with all 5 save slots),
-                    # we know that the current data will be overwritten and some items will be lost
-                    # Once this menu value changes, we can write back the items to memory
-                    if ctx.last_menu_value == b"\x09" or ctx.last_menu_value == b"\x12":
-                        if menu_value != b"\x09" and menu_value != b"\x12":
-                            ctx._flush_item_state()
-                            print("[Level Watcher] Restored item state after New/Load game")
+                    if ctx.slot:
+                        # The menu value on the "Press the START button" screen is 0x11
+                        # and there is no way to return to this screen once START is pressed
+                        # If the value is 0x11, this means a reset happened (or the client connected before reaching this screen)
+                        # and we need to reapply the patches
+                        if ctx.last_menu_value != b"\x11" and menu_value == b"\x11":
+                            ctx.apply_patches()
+
+                        # If the menu value is 0x9 (can see New game/Load game) or 0x12 (Load menu with all 5 save slots),
+                        # we know that the current data will be overwritten and some items will be lost
+                        # Once this menu value changes, we can write back the items to memory
+                        if ctx.last_menu_value == b"\x09" or ctx.last_menu_value == b"\x12":
+                            if menu_value not in (b"\x09", b"\x12", b"\x00"):
+                                ctx._flush_item_state()
+                                print("[Level Watcher] Restored item state after New/Load game")
 
                     ctx.last_menu_value = menu_value
 
