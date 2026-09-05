@@ -21,11 +21,11 @@ CATACOMBS_SUBREGION_LOCATIONS = {
         "Catacombs Mana Gem"
     ],
     "Catacombs Waterfall": [
-        "Catacombs Blue Gem - Waterfall Room Under Right Breakable Stone",
-        "Catacombs Blue Gem - Waterfall Room Under Left Breakable Stone",
+        "Catacombs Blue Gem - Waterfall Room Pillars 1",
         "Catacombs Blue Gem - Waterfall Room Pillars 2",
         "Catacombs Blue Gem - Waterfall Room Top Left",
-        "Catacombs Blue Gem - Waterfall Room Pillars 1",
+        "Catacombs Blue Gem - Waterfall Room Under Right Breakable Stone",
+        "Catacombs Blue Gem - Waterfall Room Under Left Breakable Stone",
         "Catacombs Blue Gem - Waterfall Room Save Point",
         "Catacombs Blue Gem - Before Wind Horn",
         "Catacombs Elite",
@@ -39,62 +39,62 @@ TWILIGHT_FALLS_SUBREGION_LOCATIONS = {
         "TF Armor Chest - Behind Vines"
     ],
     "TF End of Level": [
-        "TF Health Gem",
         "TF Blue Gem - End of Level",
-        "Twilight Falls Cleared",
-        "Objective Complete - Reach the Enchanted Forest"
+        "TF Health Gem",
+        "Objective Complete - Reach the Enchanted Forest",
+        "Twilight Falls Cleared"
     ]
 }
 
 VALLEY_OF_AVALAR_SUBREGION_LOCATIONS = {
     "VoA Post-Village": [   # All locations reachable after saving the village without any other abilities
-        "VoA Blue Gem - Near Passageway Right",
-        "VoA Blue Gem - Island",
-        "VoA Blue Gem - Hidden Area",
-        "VoA Blue Gem - Above Passageway",
-        "VoA Blue Gem - Near Meadow Cave",
-        "VoA Blue Gem - Between Passageway and Hidden Area",
-        "VoA Blue Gem - On Top of Platform Near Island",
-        "VoA Blue Gem - Right of Big Waterfall",
-        "VoA Blue Gem - Near Raft",
-        "VoA Blue Gem - Behind Supply Cave",
         "VoA Blue Gem - Near Cheetah Village",
+        "VoA Blue Gem - Near Meadow Cave",
         "VoA Blue Gem - Under Platform Near Island",
+        "VoA Blue Gem - On Top of Platform Near Island",
+        "VoA Blue Gem - Island",
+        "VoA Blue Gem - Right of Big Waterfall",
         "VoA Blue Gem - Left of Big Waterfall",
         "VoA Blue Gem - Near Supply Cave",
+        "VoA Blue Gem - Behind Supply Cave",
+        "VoA Blue Gem - Above Passageway",
+        "VoA Blue Gem - Near Passageway Right",
+        "VoA Blue Gem - Between Passageway and Hidden Area",
+        "VoA Blue Gem - Hidden Area",
+        "VoA Blue Gem - Near Raft",
         "VoA Health Gem - Big Oak",
         "VoA Mana Gem - Island",
         "VoA Armor Chest - Big Waterfall"
     ],
     "VoA Elite Cliff": [
         "VoA Blue Gem - Near Elite",
-        "VoA Elite",
         "VoA Health Gem - Near Elite",
+        "VoA Elite"
     ],
     "VoA Above Meadow Cave": [
         "VoA Blue Gem - Above Meadow Cave",
         "VoA Armor Chest - Above Meadow Cave"
     ],
     "VoA Meadow Cave": [
-        "Objective Complete - Find Meadow",
-        "VoA Armor Chest - Meadow"
+        "VoA Armor Chest - Meadow",
+        "Objective Complete - Find Meadow"
     ],
     "VoA Hermit Cave": [
         "VoA Blue Gem - Hermit Area Tunnels",
-        "VoA Health Gem - Hermit Area Tunnels",
+        "VoA Health Gem - Hermit Area Tunnels"
     ],
     "VoA Hermit Cave Beyond Wind": [
         "VoA Blue Gem - Near Hermit",
-        "VoA Armor Chest - Hermit",
         "VoA Mana Gem - Near Hermit",
+        "VoA Armor Chest - Hermit",
         "Objective Complete - Find the Hermit"
     ],
     "VoA Post-Hermit": [
         "VoA Mana Gem - Behind Gate",
-        "Valley of Avalar Cleared",
         "Objective Complete - Find the Supply Cave",
         "Objective Complete - Find the Raft",
-        "Objective Complete - Bring the Raft to Meadow"
+        "Objective Complete - Bring the Raft to Meadow",
+        "Valley of Avalar Cleared"
     ]
 }
 
@@ -128,14 +128,14 @@ DRAGON_CITY_SUBREGION_LOCATIONS = {
 
 RUINS_OF_WARFANG_SUBREGION_LOCATIONS = {
     "RoW Lower Left Trap Road": [
-        "RoW Blue Gem - Left Path Near Trap",
-        "RoW Blue Gem - Left Path Near Wallrun"
+        "RoW Blue Gem - Left Path Near Wallrun",
+        "RoW Blue Gem - Left Path Near Trap"
     ],
     "RoW Upper Right": [
         "RoW Blue Gem - Up Right Path Near Key",
         "RoW Health Gem - Up Right Path Near Key",
         "RoW Mana Gem - Up Right Path After Falling Stones",
-        "RoW Armor Chest - Up Right Path Under Earth Slab",
+        "RoW Armor Chest - Up Right Path Under Earth Slab"
     ],
     "RoW Upper Left": [
         "RoW Mana Gem - Up Left Path Behind Shadow Gate",
@@ -168,7 +168,7 @@ THE_DESTROYER_SUBREGION_LOCATIONS = {
     "Destroyer Top Half": [
         "Destroyer Blue Gem - Right Shoulder Left",
         "Destroyer Blue Gem - Right Shoulder Right",
-        "Destroyer Armor Chest - Right Arm",
+        "Destroyer Armor Chest - Right Arm"
     ],
     "Destroyer Armpit and Beyond": [
         "Destroyer Blue Gem - Under Right Armpit",
@@ -183,10 +183,10 @@ THE_DESTROYER_SUBREGION_LOCATIONS = {
 BURNED_LANDS_SUBREGION_LOCATIONS = {
     "BL Beyond Climbing Wall": [
         "BL Blue Gem - Bridge Before Last Ring Right",
-        "BL Blue Gem - Last Ring Area Far Right",
-        "BL Blue Gem - Last Ring Area Far Left",
-        "BL Blue Gem - After Last Ring Left",
         "BL Blue Gem - Bridge Before Last Ring Left",
+        "BL Blue Gem - Last Ring Area Far Left",
+        "BL Blue Gem - Last Ring Area Far Right",
+        "BL Blue Gem - After Last Ring Left",
         "BL Blue Gem - After Last Ring Right",
         "BL Mana Gem - Under Bridge",
         "Objective Complete - Reach the Volcano",
@@ -196,10 +196,10 @@ BURNED_LANDS_SUBREGION_LOCATIONS = {
 
 FLOATING_ISLANDS_SUBREGION_LOCATIONS = {
     "FI Beyond Torch Door": [
-        "FI Blue Gem - Troll Island Top",
-        "FI Blue Gem - Hero Grublin Elite Island Middle",
-        "FI Blue Gem - Hero Grublin Elite Island Top",
         "FI Blue Gem - Troll Island Left",
+        "FI Blue Gem - Troll Island Top",
+        "FI Blue Gem - Hero Grublin Elite Island Top",
+        "FI Blue Gem - Hero Grublin Elite Island Middle",
         "FI Health Gem - Hero Grublin Elite Island",
         "FI Elite - Wyvern",
         "FI Elite - Hero Grublin",
