@@ -626,28 +626,37 @@ def create_regular_locations(world: DotDWorld) -> None:
     )
 
     gallery.add_locations(gallery_locations, DotDLocation)
-    catacombs.add_locations(catacombs_locations, DotDLocation)
-    twilight_falls.add_locations(twilight_falls_locations, DotDLocation)
-    valley_of_avalar.add_locations(valley_of_avalar_locations, DotDLocation)
-    dragon_city.add_locations(dragon_city_locations, DotDLocation)
-    attack_of_the_golem.add_locations(attack_of_the_golem_locations, DotDLocation)
-    ruins_of_warfang.add_locations(ruins_of_warfang_locations, DotDLocation)
-    the_dam.add_locations(the_dam_locations, DotDLocation)
-    the_destroyer.add_locations(the_destroyer_locations, DotDLocation)
-    burned_lands.add_locations(burned_lands_locations, DotDLocation)
-    floating_islands.add_locations(floating_islands_locations, DotDLocation)
 
     # Place sub-region locations using the dicts from regions.py
+    catacombs.add_locations(catacombs_locations, DotDLocation)
     place_subregion_locations(world, CATACOMBS_SUBREGION_LOCATIONS)
-    place_subregion_locations(world, TWILIGHT_FALLS_SUBREGION_LOCATIONS)
-    place_subregion_locations(world, VALLEY_OF_AVALAR_SUBREGION_LOCATIONS)
-    place_subregion_locations(world, DRAGON_CITY_SUBREGION_LOCATIONS)
-    place_subregion_locations(world, RUINS_OF_WARFANG_SUBREGION_LOCATIONS)
-    place_subregion_locations(world, THE_DAM_SUBREGION_LOCATIONS)
-    place_subregion_locations(world, THE_DESTROYER_SUBREGION_LOCATIONS)
-    place_subregion_locations(world, BURNED_LANDS_SUBREGION_LOCATIONS)
-    place_subregion_locations(world, FLOATING_ISLANDS_SUBREGION_LOCATIONS)
 
+    twilight_falls.add_locations(twilight_falls_locations, DotDLocation)
+    place_subregion_locations(world, TWILIGHT_FALLS_SUBREGION_LOCATIONS)
+
+    valley_of_avalar.add_locations(valley_of_avalar_locations, DotDLocation)
+    place_subregion_locations(world, VALLEY_OF_AVALAR_SUBREGION_LOCATIONS)
+
+    dragon_city.add_locations(dragon_city_locations, DotDLocation)
+    place_subregion_locations(world, DRAGON_CITY_SUBREGION_LOCATIONS)
+
+    attack_of_the_golem.add_locations(attack_of_the_golem_locations, DotDLocation)
+
+    ruins_of_warfang.add_locations(ruins_of_warfang_locations, DotDLocation)
+    place_subregion_locations(world, RUINS_OF_WARFANG_SUBREGION_LOCATIONS)
+
+    the_dam.add_locations(the_dam_locations, DotDLocation)
+    place_subregion_locations(world, THE_DAM_SUBREGION_LOCATIONS)
+
+    the_destroyer.add_locations(the_destroyer_locations, DotDLocation)
+    place_subregion_locations(world, THE_DESTROYER_SUBREGION_LOCATIONS)
+
+    burned_lands.add_locations(burned_lands_locations, DotDLocation)
+    place_subregion_locations(world, BURNED_LANDS_SUBREGION_LOCATIONS)
+
+    floating_islands.add_locations(floating_islands_locations, DotDLocation)
+    place_subregion_locations(world, FLOATING_ISLANDS_SUBREGION_LOCATIONS)
+    
 
 def create_events(world: DotDWorld) -> None:
     from worlds.generic.Rules import set_rule
