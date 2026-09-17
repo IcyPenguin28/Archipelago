@@ -42,12 +42,11 @@ class ShuffleChapterOrder(Toggle):
 
 class ShuffledElements(OptionSet):
     """
-    Any elements added to this set will be unselectable until obtained via an item.
-    Fire and Poison are unsupported by this feature due to a lack of checks prior to their use in the Catacombs.
+    Any elements added to this set will be unusable until obtained via an item.
     Use the Spyro/Cynder Elements Handling options for finer control.
     """
     display_name = "Shuffled Elements"
-    valid_keys = {"Electricity", "Ice", "Earth", "Fear", "Wind", "Shadow"}
+    valid_keys = {"Fire", "Ice", "Earth", "Electricity", "Poison", "Shadow", "Fear", "Wind",}
 
 
 class SpyroElementsHandling(Choice):
@@ -110,6 +109,33 @@ class LearnFury(Choice):
 
     default = option_disabled
 
+
+class HyperEnemies(Toggle):
+    """
+    All enemies (including Elite Enemies) will move and attack twice as fast. Does not apply to bosses.
+    """
+    display_name = "Hyper Enemies"
+
+    
+class EnemyHealth(Choice):
+    """
+    Enemies will have more or less health depending on this option. Does not apply to Elite Enemies and bosses.
+
+    Normal: Enemies will spawn with their normal base health, like in Story Mode.
+
+    Half: Enemies will spawn with half of their base health, so they will be easier to kill.
+
+    Double: Enemies will spawn with double their base health. In vanilla, enemies have double health in Chapter Mode.
+    """
+    display_name = "Enemy Health"
+
+    option_normal = 0
+    option_half = 1
+    option_double = 2
+
+    default = option_normal
+    
+
 class RandomEliteElements(Choice):
     """
     All 8 Elite Enemies will have the element required to break their masks randomized, with the color of the mask matching the newly randomized element.
@@ -130,6 +156,26 @@ class RandomEliteElements(Choice):
     default = option_disabled
 
 
+class FewerEliteElementRequirements(Toggle):
+    """
+    Normally, logic expects that you have ALL of an Elite's elements to beat it (so you don't have to reroll the mask).
+    This makes it so only one of the elements is logically required to beat an Elite.
+    It might be necessary to respawn the Elite a few times, since which mask the Elite uses is determined by RNG.
+    Elites with 2 masks have a 2/3 chance to spawn with the first and a 1/3 chance to spawn with the second.
+    Elites with 3 masks have an equal chance to spawn with any mask.
+    """
+    display_name = "Fewer Elite Element Requirements"
+
+
+class FixBrokenArmors(DefaultOnToggle):
+    """
+    Fix Spyro's Silver Helmet and Cynder's Silver Tail, which do not work in vanilla.
+    Spyro's Silver Helmet will increase his melee damage by 20%.
+    Cynder's Silver Tail will increase her melee attack speed by 20%.
+    """
+    display_name = "Fix Broken Armors"
+
+
 # We must now define a dataclass inheriting from PerGameCommonOptions that we put all our options in.
 # This is in the format "option_name_in_snake_case: OptionClassName"
 @dataclass
@@ -141,9 +187,58 @@ class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
     learn_to_climb: LearnToClimb
     learn_to_wall_run: LearnToWallRun
     learn_fury: LearnFury
+    hyper_enemies: HyperEnemies
+    enemy_health: EnemyHealth
     random_elite_elements: RandomEliteElements
-    
+    fewer_elite_element_requirements: FewerEliteElementRequirements
+    fix_broken_armors: FixBrokenArmors
 
-# If we want to group our optionps by similar type we can do so as well. This looks nice on the website.
+
+# If we want to group our options by similar type we can do so as well. This looks nice on the website.
+dotd_option_groups: list[OptionGroup] = [
+    OptionGroup(
+        "Level Options",
+        [
+            ShuffleChapterOrder
+        ]
+    ),
+    #OptionGroup(
+    #    "Goal Options",
+    #    [
+    #        
+    #    ]
+    #),
+    OptionGroup(
+        "Logic Options",
+        [
+            FewerEliteElementRequirements
+        ]
+    ),
+    OptionGroup(
+        "Item Options",
+        [
+            ShuffledElements,
+            SpyroElementsHandling,
+            CynderElementsHandling,
+            LearnToClimb,
+            LearnToWallRun,
+            LearnFury
+        ]
+    ),
+    OptionGroup(
+        "Enemy Options",
+        [
+            HyperEnemies,
+            EnemyHealth,
+            RandomEliteElements
+        ]
+    ),
+    OptionGroup(
+        "Enhancements",
+        [
+            FixBrokenArmors
+        ]
+    )
+]
 
 # We can also define presets (dict of "option_name_in_snake_case": DefaultValue)

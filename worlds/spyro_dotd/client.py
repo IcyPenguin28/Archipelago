@@ -213,10 +213,6 @@ LEVEL_NAME_TO_SCRATCH_ADDRESS = {
 # PINE's get_game_id() typically returns the disc serial, e.g. "SLUS-21820"
 EXPECTED_GAME_ID = "SLUS-21820"
 
-# Patching
-ADDR_ARMOR_OWNERSHIP_CHECK_HOOK = 0x0039C2CC
-ADDR_ARMOR_OWNERSHIP_CHECK_ROUTINE = 0x01FFED38
-
 # Enemy data
 ENEMY_NAME_TO_ID = {
     "Grublin":      b"\x00",
@@ -435,7 +431,10 @@ class DotDContext(CommonContext):
         self.shuffled_elements = set()
         self.learn_wall_climbing = False
         self.learn_wall_running = False
+        self.hyper_enemies = False
+        self.enemy_health = 0
         self.random_elite_elements = 0
+        self.fix_broken_armors = False
 
         # Prepare to fire an async task to check for when wall climbing/running can be learned
         self._wall_climbing_setter_task: Optional[asyncio.Task] = None
@@ -524,11 +523,20 @@ class DotDContext(CommonContext):
             if not self.learn_wall_running:
                 self._learned_wall_running = True
 
+            # Hyper Enemies
+            self.hyper_enemies = bool(args["slot_data"].get("hyper_enemies", 0))
+
+            # Enemy Health
+            self.enemy_health = args["slot_data"].get("enemy_health", 0)
+
             # Random Elite Elements
             self.random_elite_elements = args["slot_data"].get("random_elite_elements", 0)
             elems = args["slot_data"].get("elite_elements")
             if elems:
                 self.elite_elements = elems
+
+            # Fix Broken Armors
+            self.fix_broken_armors = bool(args["slot_data"].get("fix_broken_armors", 0))
 
             # Set current level to None to reinit the level data / refetch pointers
             self.current_level = None
@@ -736,6 +744,26 @@ class DotDContext(CommonContext):
     # Patches
     # ------------------------------------------------------------------
     def install_element_rando(self):
+        routine_elem0 = bytes([
+            0x0C, 0x00, 0x43, 0x10,
+            0x70, 0x1D, 0x22, 0x8E,
+            0x08, 0x00, 0x40, 0x14,
+            0x24, 0x00, 0x22, 0x82,
+            0xA6, 0x00, 0x04, 0x3C,
+            0x02, 0x00, 0x40, 0x10,
+            0xA0, 0xC6, 0x84, 0x34,
+            0x04, 0x00, 0x84, 0x24,
+            0x00, 0x00, 0x82, 0x80,
+            0x03, 0x00, 0x40, 0x10,
+            0x00, 0x00, 0x00, 0x00,
+            0x93, 0x94, 0x0D, 0x08,
+            0x00, 0x00, 0x00, 0x00,
+            0xA4, 0x94, 0x0D, 0x08,
+            0x00, 0x00, 0x00, 0x00
+        ])
+        hook_elem0 = bytes([
+            0x6B, 0xFE, 0x7F, 0x08
+        ])
         routine = bytes([
             0x00, 0x00, 0x11, 0x24,
             0x24, 0x00, 0x44, 0x92,
@@ -772,6 +800,8 @@ class DotDContext(CommonContext):
             0x80, 0xFE, 0x7F, 0x08
         ])
 
+        self.memory.write_bytes(0x01FFF9AC, routine_elem0)
+        self.memory.write_bytes(0x00365244, hook_elem0)
         self.memory.write_bytes(0x01FFFA00, routine)
         self.memory.write_bytes(0x00369A2C, hook1)
         self.memory.write_bytes(0x00369A34, hook2)
@@ -779,16 +809,11 @@ class DotDContext(CommonContext):
         self.memory.write_bytes(0x00369A64, hook3)
         self.memory.write_bytes(0x00369A8C, hook3)
         self.memory.write_bytes(0x00369BB4, hook4)
+
     def apply_patches(self):
         # ARMOR OWNERSHIP BYTE SPLIT
-        self.memory.write_bytes(ADDR_ARMOR_OWNERSHIP_CHECK_ROUTINE, bytes([
+        self.memory.write_bytes(0x0039C2CC, bytes([
             0x21, 0x00, 0x83, 0x90,  # lbu v1, 0x21(a0)
-            0xB4, 0x70, 0x0E, 0x08,  # j 0x0039c2d0
-            0x00, 0x00, 0x00, 0x00,  # nop
-            0x00, 0x00, 0x00, 0x00,  # nop
-        ]))
-        self.memory.write_bytes(ADDR_ARMOR_OWNERSHIP_CHECK_HOOK, bytes([
-            0x4E, 0xFB, 0x7F, 0x08,  # j 0x01FFED38
         ]))
 
         # CHAPTER UNLOCK BYTE SPLIT
@@ -808,6 +833,59 @@ class DotDContext(CommonContext):
 
         # BLUE GEMS GIVE 0 EXP PATCH
         self.memory.write_u32(0x009FEB14, 0)
+
+        # HYPER ENEMIES
+        if self.hyper_enemies:
+            self.memory.write_bytes(0x002FB794, bytes([
+                0x00, 0x40, 0x02, 0x3C
+            ]))
+
+        # ENEMY HEALTH MULTIPLIER
+        health_bytes = [0x80, 0x3F]         # 1.0
+        if self.enemy_health == 1:
+            health_bytes = [0x00, 0x3F]     # 0.5
+        elif self.enemy_health == 2:
+            health_bytes = [0x00, 0x40]     # 2.0
+        health_bytes.extend([0x02, 0x3C])   # Rest of the instruction (lui v0)
+        self.memory.write_bytes(0x002FB77C, bytes(health_bytes))
+
+        # FIX BROKEN ARMOR
+        if self.fix_broken_armors:
+            self.memory.write_bytes(0x0034E464, bytes([
+                0xFF, 0xF7, 0x03, 0x24
+            ]))
+            self.memory.write_bytes(0x0034E474, bytes([
+                0x00, 0x08, 0x63, 0x34
+            ]))
+            self.memory.write_bytes(0x0033C0BC, bytes([
+                0xCC, 0x0E, 0x89, 0x8C
+            ]))
+            self.memory.write_bytes(0x0033C0C4, bytes([
+                0xCC, 0x0E, 0x88, 0xAC
+            ]))
+            self.memory.write_bytes(0x0033D214, bytes([
+                0xCC, 0x0E, 0x82, 0x8E
+            ]))
+            self.memory.write_bytes(0x00343C78, bytes([
+                0xCC, 0x0E, 0x24, 0x8E
+            ]))
+            self.memory.write_bytes(0x00343C80, bytes([
+                0xCC, 0x0E, 0x23, 0xAE,
+                0xCC, 0x0E, 0x23, 0x8E
+            ]))
+            self.memory.write_bytes(0x00343C90, bytes([
+                0xCC, 0x0E, 0x23, 0xAE
+            ]))
+            self.memory.write_bytes(0x0036E4DC, bytes([
+                0xCC, 0x0E, 0x03, 0x8E
+            ]))
+            self.memory.write_bytes(0x0036E4E4, bytes([
+                0xCC, 0x0E, 0x02, 0xAE,
+                0xCC, 0x0E, 0x02, 0x8E
+            ]))
+            self.memory.write_bytes(0x0036E4F4, bytes([
+                0xCC, 0x0E, 0x02, 0xAE
+            ]))
 
         # ELEMENT RANDO
         self.install_element_rando()

@@ -70,8 +70,12 @@ class DotDWorld(World):
         self.options.learn_to_wall_run.value = slot_data["learn_to_wall_run"]
         self.options.shuffle_chapter_order.value = slot_data["shuffle_chapter_order"]
         self.chapter_order = [str(x) for x in slot_data["chapter_order"]]
+        self.options.hyper_enemies.value = slot_data["hyper_enemies"]
+        self.options.enemy_health.value = slot_data["enemy_health"]
         self.options.random_elite_elements.value = slot_data["random_elite_elements"]
         self.elite_elements = slot_data["elite_elements"]
+        self.fewer_elite_element_requirements = slot_data["fewer_elite_element_requirements"]
+        self.fix_broken_armors = slot_data["fix_broken_armors"]
 
         return slot_data
 
@@ -118,7 +122,11 @@ class DotDWorld(World):
             "learn_to_climb",
             "learn_to_wall_run",
             "learn_fury",
-            "random_elite_elements"
+            "hyper_enemies",
+            "enemy_health",
+            "random_elite_elements",
+            "fewer_elite_element_requirements",
+            "fix_broken_armors"
         )
 
         slot_data["chapter_order"] = self.chapter_order

@@ -23,6 +23,12 @@ def set_location_rules(world: DotDWorld):
     # set_rule(cynder_gallery, \
     #          lambda state: state.count("Blue Gem Cluster", world.player) >= 70)
     
+    # Best and most reliable way of getting Alliance Gallery is by chain grabbing small enemies.
+    # They will never die if you regrab them quickly enough. If you stop mashing the attack button before the throw,
+    # the enemy will be dropped with no lag and able to be grabbed again immediately.
+    set_rule(alliance_gallery, \
+             lambda state: can_chain_grab_small_enemies(world, state))
+    
     # Scenery Gallery unlocked when Burned Lands is cleared
     set_rule(scenery_gallery, \
              lambda state: state.can_reach_location("Burned Lands Cleared", world.player))
@@ -112,4 +118,13 @@ def has_required_elite_elements(world: DotDWorld, state: CollectionState, elite_
     elements = []
     for elem in world.elite_elements[elite_name]:
         elements.append(world.element_items[elem])
+        
+    if world.options.fewer_elite_element_requirements:
+        return state.has_any(elements, world.player)
     return state.has_all(elements, world.player)
+
+def can_chain_grab_small_enemies(world: DotDWorld, state: CollectionState) -> bool:
+    for level in ["Catacombs", "Twilight Falls", "Valley of Avalar", "Dragon City", "Ruins of Warfang", "Burned Lands", "Floating Islands"]:
+        if state.can_reach_region(level, world.player):
+            return True
+    return False
