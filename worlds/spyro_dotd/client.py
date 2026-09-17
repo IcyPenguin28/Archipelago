@@ -145,11 +145,6 @@ ITEM_NAME_TO_ELEMENT = {
     "Cynder's Shadow": "Shadow",
 }
 
-# Pointer to class values
-# Every object of a given class has the same pointer value at offset 0x0
-# Note that the class names can't be seen on PS2, but they can on Wii by following the pointer chain at offset 0x0
-CLASS_PTR_CKS08GAMESTRUCTURE = 0x00788330
-
 ARMOR_NAME_TO_ADDRESS = {
     "Spyro Helmet Silver": ADDR_SPYRO_HELMET_SILVER,
     "Spyro Helmet Gold": ADDR_SPYRO_HELMET_GOLD,
@@ -605,6 +600,8 @@ class DotDContext(CommonContext):
         # the correct "everything not in the shuffle pool" state
         self._learned_elements = ALL_ELEMENTS_SET.difference(self.shuffled_elements)
 
+        # Reset all armor, level and element unlock flags to 0
+        self.reset_scratch_flags()
 
     def _accumulate_item(self, item_name: str):
         """
@@ -914,6 +911,11 @@ class DotDContext(CommonContext):
                 self.memory.write_bytes(scratch_addr, b"\x01")
 
         print("Scratch flags restored.")
+
+    def reset_scratch_flags(self):
+        for values in [ARMOR_NAME_TO_SCRATCH_ADDRESS.values(), LEVEL_NAME_TO_SCRATCH_ADDRESS.values(), ELEMENT_NAME_TO_UNLOCKED_ADDRESS.values()]:
+            for scratch_addr in values:
+                self.memory.write_bytes(scratch_addr, b"\x00")
 
     # ------------------------------------------------------------------
     # Death / kill
