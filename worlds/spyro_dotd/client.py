@@ -1376,13 +1376,12 @@ async def wall_running_learner(ctx: DotDContext):
 
         if ctx.addr_spyro_hero is not None and ctx.addr_cynder_hero is not None:
             if ctx.memory.read_u32(ctx.addr_spyro_hero) == CLASS_PTR_CKHKS08HERO and ctx.memory.read_u32(ctx.addr_cynder_hero) == CLASS_PTR_CKHKS08HERO:
+                # TODO: Write float instead unless u32 works.
+                ctx.memory.write_float(ctx.addr_spyro_hero + 0x9E0, 0.25)
+                ctx.memory.write_float(ctx.addr_cynder_hero + 0x9E0, 0.25)
                 break
 
         await asyncio.sleep(0.1)
-
-    # TODO: Write float instead unless u32 works.
-    ctx.memory.write_float(ctx.addr_spyro_hero + 0x9E0, 0.25)
-    ctx.memory.write_float(ctx.addr_cynder_hero + 0x9E0, 0.25)
 
 # ---------------------------------------------------------------------------
 # Entry point
