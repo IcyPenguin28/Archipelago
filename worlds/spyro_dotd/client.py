@@ -601,7 +601,8 @@ class DotDContext(CommonContext):
         self._learned_elements = ALL_ELEMENTS_SET.difference(self.shuffled_elements)
 
         # Reset all armor, level and element unlock flags to 0
-        self.reset_scratch_flags()
+        if self.memory.is_connected and self._game_version_ok:
+            self.reset_scratch_flags()
 
     def _accumulate_item(self, item_name: str):
         """
