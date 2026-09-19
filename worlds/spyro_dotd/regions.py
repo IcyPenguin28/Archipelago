@@ -168,12 +168,12 @@ THE_DESTROYER_SUBREGION_LOCATIONS = {
     "Destroyer Top Half": [
         "Destroyer Blue Gem - Right Shoulder Left",
         "Destroyer Blue Gem - Right Shoulder Right",
+        "Destroyer Health Gem - Right Arm",
+        "Destroyer Mana Gem - Right Arm",
         "Destroyer Armor Chest - Right Arm"
     ],
     "Destroyer Armpit and Beyond": [
         "Destroyer Blue Gem - Under Right Armpit",
-        "Destroyer Health Gem - Right Arm",
-        "Destroyer Mana Gem - Right Arm",
         "Destroyer Mana Gem - Mouth",
         "Objective Complete - Destroy all the crystals of the Destroyer",
         "The Destroyer Cleared"
