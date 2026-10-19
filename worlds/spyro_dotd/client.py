@@ -3,7 +3,10 @@ from __future__ import annotations
 import asyncio
 import time
 import random
-from typing import Any, Dict, Set, Optional
+from typing import TYPE_CHECKING, Any, Dict, Set, Optional
+
+if TYPE_CHECKING:
+    import kvui
 
 from enum import Enum
 
@@ -439,6 +442,15 @@ class DotDContext(CommonContext):
         self._game_version_ok: bool = False
         # Whether final boss defeat has already been sent to the server
         self._goal_sent: bool = False
+
+    # ------------------------------------------------------------------
+    # GUI
+    # ------------------------------------------------------------------
+    def make_gui(self) -> type["kvui.GameManager"]:
+        gui = super().make_gui()
+        # Change the client's name so it's no longer "Archipelago Text Client"
+        gui.base_title = "Archipelago Spyro DotD Client"
+        return gui
 
     # ------------------------------------------------------------------
     # Game version guard
