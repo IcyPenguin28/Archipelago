@@ -21,7 +21,7 @@ from .options import DotDOptions
 from .world import DotDWorld
 from .locations import LOCATION_FLAG_ADDRESS_TO_NAME, LOCATION_NAME_TO_ID
 from .pcsx2_interface.pine import Pine, struct
-# from .interface import install_element_rando_hook
+from .patches import *
 
 import logging
 logging.getLogger("websockets").setLevel(logging.WARNING)
@@ -753,152 +753,25 @@ class DotDContext(CommonContext):
     # ------------------------------------------------------------------
     # Patches
     # ------------------------------------------------------------------
-    def install_element_rando(self):
-        routine_elem0 = bytes([
-            0x0C, 0x00, 0x43, 0x10,
-            0x70, 0x1D, 0x22, 0x8E,
-            0x08, 0x00, 0x40, 0x14,
-            0x24, 0x00, 0x22, 0x82,
-            0xA6, 0x00, 0x04, 0x3C,
-            0x02, 0x00, 0x40, 0x10,
-            0xA0, 0xC6, 0x84, 0x34,
-            0x04, 0x00, 0x84, 0x24,
-            0x00, 0x00, 0x82, 0x80,
-            0x03, 0x00, 0x40, 0x10,
-            0x00, 0x00, 0x00, 0x00,
-            0x93, 0x94, 0x0D, 0x08,
-            0x00, 0x00, 0x00, 0x00,
-            0xA4, 0x94, 0x0D, 0x08,
-            0x00, 0x00, 0x00, 0x00
-        ])
-        hook_elem0 = bytes([
-            0x6B, 0xFE, 0x7F, 0x08
-        ])
-        routine = bytes([
-            0x00, 0x00, 0x11, 0x24,
-            0x24, 0x00, 0x44, 0x92,
-            0x02, 0x00, 0x80, 0x10,
-            0x21, 0x88, 0x23, 0x02,
-            0x04, 0x00, 0x31, 0x26,
-            0xA6, 0x00, 0x04, 0x3C,
-            0xA0, 0xC6, 0x84, 0x34,
-            0x21, 0x20, 0x91, 0x00,
-            0x00, 0x00, 0x84, 0x90,
-            0x02, 0x00, 0x80, 0x10,
-            0x00, 0x00, 0x00, 0x00,
-            0x70, 0x1D, 0x43, 0xAE,
-            0x13, 0xA7, 0x0D, 0x08,
-            0x01, 0x00, 0x11, 0x64
-        ])
-        hook1 = bytes([
-            0x80, 0xFE, 0x7F, 0x08,
-            0x00, 0x00, 0x03, 0x24
-        ])
-
-        hook2 = bytes([
-            0x80, 0xFE, 0x7F, 0x08,
-            0x25, 0x18, 0x80, 0x00
-        ])
-
-        hook3 = bytes([
-            0x80, 0xFE, 0x7F, 0x08,
-            0x00, 0x00, 0x00, 0x00
-        ])
-
-        hook4 = bytes([
-            0x00, 0x00, 0x03, 0x24,
-            0x80, 0xFE, 0x7F, 0x08
-        ])
-
-        self.memory.write_bytes(0x01FFF9AC, routine_elem0)
-        self.memory.write_bytes(0x00365244, hook_elem0)
-        self.memory.write_bytes(0x01FFFA00, routine)
-        self.memory.write_bytes(0x00369A2C, hook1)
-        self.memory.write_bytes(0x00369A34, hook2)
-        self.memory.write_bytes(0x00369A58, hook3)
-        self.memory.write_bytes(0x00369A64, hook3)
-        self.memory.write_bytes(0x00369A8C, hook3)
-        self.memory.write_bytes(0x00369BB4, hook4)
 
     def apply_patches(self):
-        # ARMOR OWNERSHIP BYTE SPLIT
-        self.memory.write_bytes(0x0039C2CC, bytes([
-            0x21, 0x00, 0x83, 0x90,  # lbu v1, 0x21(a0)
-        ]))
+        install_armor_ownership_byte_split(self)
+        install_chapter_unlock_byte_split(self)
+        install_chapter_mode_permanent_unlock(self)
+        install_story_mode_permanent_lock(self)
+        install_empty_blue_gems(self)
+        install_enemy_health_mult_override(self)
 
-        # CHAPTER UNLOCK BYTE SPLIT
-        self.memory.write_bytes(0x003BDCC4, bytes([
-            0x54, 0x02, 0x45, 0x90
-        ]))
-
-        # CHAPTER MENU PERMANENT UNLOCK PATCH
-        self.memory.write_bytes(0x005E7CB0, bytes([
-            0x01, 0x00, 0x03, 0x34
-        ]))
-
-        # STORY MODE PERMANENT LOCK PATCH
-        self.memory.write_bytes(0x005E7C78, bytes([
-            0x01, 0x00, 0x05, 0x34
-        ]))
-
-        # BLUE GEMS GIVE 0 EXP PATCH
-        self.memory.write_u32(0x009FEB14, 0)
-
-        # HYPER ENEMIES
+        # Options-based patches
         if self.hyper_enemies:
-            self.memory.write_bytes(0x002FB794, bytes([
-                0x00, 0x40, 0x02, 0x3C
-            ]))
+            install_hyper_enemies(self)
 
-        # ENEMY HEALTH MULTIPLIER
-        health_bytes = [0x80, 0x3F]         # 1.0
-        if self.enemy_health == 1:
-            health_bytes = [0x00, 0x3F]     # 0.5
-        elif self.enemy_health == 2:
-            health_bytes = [0x00, 0x40]     # 2.0
-        health_bytes.extend([0x02, 0x3C])   # Rest of the instruction (lui v0)
-        self.memory.write_bytes(0x002FB77C, bytes(health_bytes))
-
-        # FIX BROKEN ARMOR
         if self.fix_broken_armors:
-            self.memory.write_bytes(0x0034E464, bytes([
-                0xFF, 0xF7, 0x03, 0x24
-            ]))
-            self.memory.write_bytes(0x0034E474, bytes([
-                0x00, 0x08, 0x63, 0x34
-            ]))
-            self.memory.write_bytes(0x0033C0BC, bytes([
-                0xCC, 0x0E, 0x89, 0x8C
-            ]))
-            self.memory.write_bytes(0x0033C0C4, bytes([
-                0xCC, 0x0E, 0x88, 0xAC
-            ]))
-            self.memory.write_bytes(0x0033D214, bytes([
-                0xCC, 0x0E, 0x82, 0x8E
-            ]))
-            self.memory.write_bytes(0x00343C78, bytes([
-                0xCC, 0x0E, 0x24, 0x8E
-            ]))
-            self.memory.write_bytes(0x00343C80, bytes([
-                0xCC, 0x0E, 0x23, 0xAE,
-                0xCC, 0x0E, 0x23, 0x8E
-            ]))
-            self.memory.write_bytes(0x00343C90, bytes([
-                0xCC, 0x0E, 0x23, 0xAE
-            ]))
-            self.memory.write_bytes(0x0036E4DC, bytes([
-                0xCC, 0x0E, 0x03, 0x8E
-            ]))
-            self.memory.write_bytes(0x0036E4E4, bytes([
-                0xCC, 0x0E, 0x02, 0xAE,
-                0xCC, 0x0E, 0x02, 0x8E
-            ]))
-            self.memory.write_bytes(0x0036E4F4, bytes([
-                0xCC, 0x0E, 0x02, 0xAE
-            ]))
+            install_armor_fixes(self)
 
-        # ELEMENT RANDO
-        self.install_element_rando()
+        # This does not need an if since the AP gives all element items not shuffled via the YAML
+        # to mimic vanilla behavior in this non-vanilla system.
+        install_element_rando(self)
 
         print("Game patches applied.")
 
@@ -1158,7 +1031,7 @@ async def emulator_watchdog(ctx: DotDContext):
                     # Re-validate game version on reconnect
                     if not ctx.check_game_version():
                         ctx._game_version_ok = False
-                        print("[Watchdog] Wrong game version after reconnect — pausing operations.")
+                        print("[Watchdog] Wrong game version after reconnect - pausing operations.")
                     else:
                         ctx._game_version_ok = True
         except Exception as e:
