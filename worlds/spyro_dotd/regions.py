@@ -250,8 +250,18 @@ def connect_regions(world: DotDWorld) -> None:
 
     if world.options.shuffle_chapter_order:
         shuffled = list(SHUFFLEABLE_CHAPTERS)
-        world.random.shuffle(shuffled)
+        if world.options.burned_lands_threshold.value == 0:
+            # Burned Lands can appear anywhere. Shuffle as normal.
+            world.random.shuffle(shuffled)
+        else:
+            # Burned Lands Threshold option is enabled (> 0), and so must be taken out and inserted later.
+            # BL is reinserted at any index on or beyond the threshold option.
+            shuffled.remove("Burned Lands")
+            world.random.shuffle(shuffled)
+            bl_chapter_index = world.random.randrange(world.options.burned_lands_threshold.value, len(SHUFFLEABLE_CHAPTERS))
+            shuffled.insert(bl_chapter_index, "Burned Lands")
     else:
+        # Vanilla chapter order
         shuffled = list(SHUFFLEABLE_CHAPTERS)
 
     # Support UT

@@ -70,6 +70,7 @@ class DotDWorld(World):
         self.options.learn_to_wall_run.value = slot_data["learn_to_wall_run"]
         self.options.shuffle_chapter_order.value = slot_data["shuffle_chapter_order"]
         self.chapter_order = [str(x) for x in slot_data["chapter_order"]]
+        self.options.burned_lands_threshold.value = slot_data["burned_lands_threshold"]
         self.options.hyper_enemies.value = slot_data["hyper_enemies"]
         self.options.enemy_health.value = slot_data["enemy_health"]
         self.options.random_elite_elements.value = slot_data["random_elite_elements"]
@@ -116,6 +117,7 @@ class DotDWorld(World):
         slot_data = self.options.as_dict(
             "death_link",
             "shuffle_chapter_order",
+            "burned_lands_threshold",
             "shuffled_elements",
             "spyro_elements_handling",
             "cynder_elements_handling",

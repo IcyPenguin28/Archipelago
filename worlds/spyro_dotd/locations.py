@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 #                   101-120: Health Gems
 #                   201-220: Mana Gems
 #                   301-308: Elite Enemies
-#                   401-420: Armor Chests
+#                   401-418: Armor Chests
 #                   501-510: Level Clears
 #                   601-604: Gallery Unlocks
 #                   701-722: Objectives Complete

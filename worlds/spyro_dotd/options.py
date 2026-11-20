@@ -40,6 +40,21 @@ class ShuffleChapterOrder(Toggle):
     display_name = "Shuffle Chapter Order"
 
 
+class BurnedLandsThreshold(Range):
+    """
+    Let's face it, we all hate the Burned Lands.
+    This number is the number of chapters that are guaranteed to appear before Burned Lands.
+    For example, setting this number to 0 means Burned Lands can appear in place of any chapter,
+    but setting it to 8 means it can only be Chapter 9 or Chapter 10.
+    This option has no effect if Shuffle Chapter Order is disabled, as Burned Lands is always Chapter 9 in vanilla.
+    """
+    display_name = "Burned Lands Threshold"
+
+    range_start = 0
+    range_end = 9
+    default = 5
+
+
 class ShuffledElements(OptionSet):
     """
     Any elements added to this set will be unusable until obtained via an item.
@@ -181,6 +196,7 @@ class FixBrokenArmors(DefaultOnToggle):
 @dataclass
 class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
     shuffle_chapter_order: ShuffleChapterOrder
+    burned_lands_threshold: BurnedLandsThreshold
     shuffled_elements: ShuffledElements
     spyro_elements_handling: SpyroElementsHandling
     cynder_elements_handling: CynderElementsHandling
@@ -199,7 +215,8 @@ dotd_option_groups: list[OptionGroup] = [
     OptionGroup(
         "Level Options",
         [
-            ShuffleChapterOrder
+            ShuffleChapterOrder,
+            BurnedLandsThreshold
         ]
     ),
     #OptionGroup(
