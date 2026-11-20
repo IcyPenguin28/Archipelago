@@ -199,4 +199,4 @@ def install_story_mode_string_override(ctx: DotDContext):
     ]))
 
     # The custom string in question
-    ctx.memory.write_string(ctx.memory.read_pointer(0x00A1AD98), "Use Chapter for AP!")
+    ctx.memory.write_string(ctx.memory.read_pointer(0x00A1AD98), ctx.story_mode_string)

@@ -191,7 +191,7 @@ class Pine:
 
 
     def write_string(self, address: int, string: str) -> None:
-        str_as_bytes: bytes = string.encode("utf-16-le")
+        str_as_bytes: bytes = string.encode("utf-16-le")+b"\x00\x00"
         self.write_bytes(address, str_as_bytes)
 
     def get_game_id(self) -> str:
