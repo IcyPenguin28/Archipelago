@@ -12,7 +12,7 @@ from enum import Enum
 
 from worlds.AutoWorld import World
 from NetUtils import ClientStatus
-from CommonClient import CommonContext, ClientCommandProcessor, server_loop, gui_enabled
+from CommonClient import CommonContext, ClientCommandProcessor, server_loop, gui_enabled, logger
 
 
 from .items import DotDItem, ITEM_NAME_TO_ID
@@ -239,12 +239,12 @@ class MemoryReader:
             self.client.connect()
             if self.client.is_connected():
                 self._connected = True
-                print("Connected to PCSX2 via PINE")
+                logger.info("Connected to PCSX2 via PINE")
                 return True
         except Exception as e:
             pass
         self._connected = False
-        print("Could not connect to PCSX2. Is PINE enabled in Advanced Settings?")
+        logger.warning("Could not connect to PCSX2. Is PINE enabled in Advanced Settings? Trying again in 3 seconds...")
         return False
 
     @property
@@ -284,6 +284,9 @@ class MemoryReader:
 
     def write_bytes(self, ps2_address: int, data: bytes) -> bool:
         return self._safe_op(lambda: self.client.write_bytes(ps2_address, data)) is not None
+
+    def write_string(self, ps2_address: int, string: str) -> bool:
+        return self._safe_op(lambda: self.client.write_string(ps2_address, string)) is not None
 
     def read_float(self, ps2_address: int) -> Optional[float]:
         data = self.read_bytes(ps2_address, 4)
@@ -691,6 +694,7 @@ class DotDContext(CommonContext):
         install_story_mode_permanent_lock(self)
         install_empty_blue_gems(self)
         install_enemy_health_mult_override(self)
+        install_story_mode_string_override(self)
 
         # Options-based patches
         if self.hyper_enemies:
@@ -703,7 +707,7 @@ class DotDContext(CommonContext):
         # to mimic vanilla behavior in this non-vanilla system.
         install_element_rando(self)
 
-        print("Game patches applied.")
+        logger.info("Game patches applied.")
 
     #NOTE: No longer used
     def restore_scratch_flags(self):
@@ -957,13 +961,14 @@ async def emulator_watchdog(ctx: DotDContext):
                 # Try to reconnect silently
                 reconnected = ctx.memory._try_connect()
                 if reconnected:
-                    print("[Watchdog] Reconnected to PCSX2.")
+                    logger.info("Reconnected to PCSX2.")
                     # Re-validate game version on reconnect
                     if not ctx.check_game_version():
                         ctx._game_version_ok = False
-                        print("[Watchdog] Wrong game version after reconnect - pausing operations.")
+                        logger.warning("Wrong game version after reconnect - pausing operations.")
                     else:
                         ctx._game_version_ok = True
+                        logger.info("Dawn of the Dragon detected!")
         except Exception as e:
             print(f"[Watchdog] Unexpected error: {e}")
 
@@ -1210,8 +1215,8 @@ def main(*args: str):
         if ctx.memory.is_connected:
             ctx._game_version_ok = ctx.check_game_version()
             if not ctx._game_version_ok:
-                print("Wrong game version detected. Client will run but memory operations are disabled.")
-                print("Please load the NTSC-U version of Dawn of the Dragon and restart the client.")
+                logger.warning("Wrong game version detected. Client will run but memory operations are disabled.")
+                logger.warning("Please load the NTSC-U version of Dawn of the Dragon and restart the client.")
         else:
             # Not connected to PCSX2 yet; the watchdog will check version when it connects
             ctx._game_version_ok = False

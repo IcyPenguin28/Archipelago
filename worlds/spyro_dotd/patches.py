@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -110,6 +111,11 @@ def install_chapter_mode_permanent_unlock(ctx: DotDContext):
 
 
 def install_story_mode_permanent_lock(ctx: DotDContext):
+    """
+    Locks Story Mode immediately.
+    \nBy default on a New Game, story mode is enabled and chapter mode is not.
+    Since this AP runs exclusively in chapter mode, we need to do the opposite.
+    """
     ctx.memory.write_bytes(0x005E7C78, bytes([
         0x01, 0x00, 0x05, 0x34
     ]))
@@ -181,3 +187,16 @@ def install_enemy_health_mult_override(ctx: DotDContext):
         health_bytes = [0x00, 0x40]     # 2.0
     health_bytes.extend([0x02, 0x3C])   # Rest of the instruction (lui v0)
     ctx.memory.write_bytes(0x002FB77C, bytes(health_bytes))
+
+
+def install_story_mode_string_override(ctx: DotDContext):
+    """
+    Override the Story Mode Over string with a custom AP-related one
+    """
+    # Override pointer in text object to point to custom string
+    ctx.memory.write_bytes(0x00A1AD98, bytes([
+        0xF0, 0xB2, 0xA9, 0x00
+    ]))
+
+    # The custom string in question
+    ctx.memory.write_string(ctx.memory.read_pointer(0x00A1AD98), "Use Chapter for AP!")
