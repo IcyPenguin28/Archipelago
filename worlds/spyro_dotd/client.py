@@ -369,6 +369,7 @@ class DotDContext(CommonContext):
         self.enemy_health = 0
         self.random_elite_elements = 0
         self.fix_broken_armors = False
+        self.spawn_with_full_restore = False
 
         # Prepare to fire an async task to check for when wall climbing/running can be learned
         self._wall_climbing_setter_task: Optional[asyncio.Task] = None
@@ -480,6 +481,9 @@ class DotDContext(CommonContext):
 
             # Fix Broken Armors
             self.fix_broken_armors = bool(args["slot_data"].get("fix_broken_armors", 0))
+
+            # Full Restore on Spawn
+            self.spawn_with_full_restore = bool(args["slot_data"].get("spawn_with_full_restore", 0))
 
             # Set current level to None to reinit the level data / refetch pointers
             self.current_level = None
@@ -753,6 +757,23 @@ class DotDContext(CommonContext):
         elif self.addr_cynder_hero and self.memory.read_bytes(self.addr_cynder_hero + 0x25, 1) == b"\x01":
             self.memory.write_u32(ADDR_CYNDER_CURRENT_HP, 0)
         self.player_dead = True
+
+
+    # ------------------------------------------------------------------
+    # Full Restore
+    # ------------------------------------------------------------------
+    def full_restore(self):
+        # Health
+        spyro_max_hp = 300 + 100 * (health_gems_collected // 4)
+        self.memory.write_u32(ADDR_SPYRO_CURRENT_HP, spyro_max_hp)
+        cynder_max_hp = 300 + 100 * (health_gems_collected // 5)
+        self.memory.write_u32(ADDR_CYNDER_CURRENT_HP, cynder_max_hp)
+
+        # Mana
+        spyro_max_mana = 300 + 100 * (mana_gems_collected // 5)
+        self.memory.write_u32(ADDR_SPYRO_CURRENT_MANA, spyro_max_mana)
+        cynder_max_mana = 300 + 100 * (mana_gems_collected // 4)
+        self.memory.write_u32(ADDR_CYNDER_CURRENT_MANA, cynder_max_mana)
 
     # ------------------------------------------------------------------
     # Legacy per-item receive handlers (still used for instant consumables)
@@ -1132,6 +1153,13 @@ async def level_watcher(ctx: DotDContext):
                         if not ctx._learned_wall_running:
                             ctx.memory.write_float(ctx.addr_spyro_hero + 0x9E0, 9999.0)
                             ctx.memory.write_float(ctx.addr_cynder_hero + 0x9E0, 9999.0)
+
+                        # Update stats based on Spawn With Full Restore settings
+                        if ctx.spawn_with_full_restore == 1 or ctx.spawn_with_full_restore == 3:
+                            # On level spawn, restore stats for both dragons only if it's a level with the dragons in it
+                            ctx.full_restore()
+                            
+
 
                     # Edit Elites data
                     if ctx.random_elite_elements != 0 and (elites := LEVEL_NAME_TO_ELITES.get(level_name)):

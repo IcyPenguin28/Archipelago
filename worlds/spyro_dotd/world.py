@@ -61,6 +61,10 @@ class DotDWorld(World):
         if not slot_data:
             return None
 
+        self.options.goal_condition.value = slot_data["goal_condition"]
+        self.options.elite_hunter_threshold.value = slot_data["elite_hunter_threshold"]
+        self.options.clear_chapters_threshold.value = slot_data["clear_chapters_threshold"]
+        self.options.always_defeat_malefor.value = slot_data["always_defeat_malefor"]
         self.options.death_link.value = slot_data["death_link"]
         self.options.learn_fury.value = slot_data["learn_fury"]
         self.options.shuffled_elements.value = set(slot_data["shuffled_elements"])
@@ -77,6 +81,7 @@ class DotDWorld(World):
         self.elite_elements = slot_data["elite_elements"]
         self.fewer_elite_element_requirements = slot_data["fewer_elite_element_requirements"]
         self.fix_broken_armors = slot_data["fix_broken_armors"]
+        self.spawn_with_full_restore = slot_data["spawn_with_full_restore"]
 
         return slot_data
 
@@ -116,6 +121,10 @@ class DotDWorld(World):
         # If you need access to the player's chosen options on the client side, there is a helper for that.
         slot_data = self.options.as_dict(
             "death_link",
+            "goal_condition",
+            "elite_hunter_threshold",
+            "clear_chapters_threshold",
+            "always_defeat_malefor",
             "shuffle_chapter_order",
             "burned_lands_threshold",
             "shuffled_elements",
@@ -128,7 +137,8 @@ class DotDWorld(World):
             "enemy_health",
             "random_elite_elements",
             "fewer_elite_element_requirements",
-            "fix_broken_armors"
+            "fix_broken_armors",
+            "spawn_with_full_restore"
         )
 
         slot_data["chapter_order"] = self.chapter_order

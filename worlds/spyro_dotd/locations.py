@@ -659,31 +659,96 @@ def create_regular_locations(world: DotDWorld) -> None:
     
 
 def create_events(world: DotDWorld) -> None:
-    from worlds.generic.Rules import set_rule
+    from worlds.generic.Rules import set_rule, add_rule
+
+    # Determine Goal
     malefors_lair = world.get_region("Malefor's Lair")
-    
-    victory_location = DotDLocation(world.player, "Defeat Malefor", None, malefors_lair)
+    menu = world.get_region("Menu")
+    goal = world.options.goal_condition.current_key
+    needs_malefor = world.options.always_defeat_malefor
+
+    if goal == "defeat_malefor" or needs_malefor:
+        victory_location = DotDLocation(world.player, "Defeat Malefor", None, malefors_lair)
+    elif goal == "elite_hunter":
+        victory_location = DotDLocation(world.player, "Hunt Elites", None, menu)
+    elif goal == "clear_chapters":
+        victory_location = DotDLocation(world.player, "Clear Chapters", None, menu)
+
     victory_location.place_locked_item(
         DotDItem("Victory", ItemClassification.progression, None, world.player)
     )
+    
 
     player = world.player
     fury_option = world.options.learn_fury.current_key
 
-    if fury_option == "both_together":
-        set_rule(victory_location,
-            lambda state: state.has("Dragon's Fury", player))
-    elif fury_option == "both_separate":
-        # Either dragon alone can build an entire fury bar, so either fury item is sufficient
-        set_rule(victory_location,
-            lambda state: state.has("Spyro's Fury", player) and state.has("Cynder's Fury", player))
-    elif fury_option == "spyro":
-        set_rule(victory_location,
-            lambda state: state.has("Spyro's Fury", player))
-    elif fury_option == "cynder":
-        set_rule(victory_location,
-            lambda state: state.has("Cynder's Fury", player))
-    # else: no rule required. Both dragons can automatically build fury
+    # Set victory location rules based on goal
+    if goal == "defeat_malefor" or needs_malefor:
+        # Fury is required to defeat Malefor
+        if fury_option == "both_together":
+            set_rule(victory_location,
+                lambda state: state.has("Dragon's Fury", player))
+        elif fury_option == "both_separate":
+            # Either dragon alone can build an entire fury bar, so either fury item is sufficient
+            set_rule(victory_location,
+                lambda state: state.has("Spyro's Fury", player) and state.has("Cynder's Fury", player))
+        elif fury_option == "spyro":
+            set_rule(victory_location,
+                lambda state: state.has("Spyro's Fury", player))
+        elif fury_option == "cynder":
+            set_rule(victory_location,
+                lambda state: state.has("Cynder's Fury", player))
+        # else: no rule required. Both dragons can automatically build fury
+    
+    if goal == "elite_hunter":
+        # Set up event locations on each Elite enemy
+        # That is, successfully checking the location acquires an "Elite Mask" item behind the scenes
+        # This "Elite Mask" is not shuffleable via AP and does not take up an item slot in the pool afaik
+
+        elite_location_names = [
+            "Catacombs Elite",
+            "TF Elite",
+            "VoA Elite",
+            "RoW Elite",
+            "Dam Elite",
+            "BL Elite",
+            "FI Elite - Wyvern",
+            "FI Elite - Hero Grublin"
+        ]
+
+        for name in elite_location_names:
+            world.get_location(name).place_locked_item(DotDItem("Elite Mask", ItemClassification.progression, None, world.player))
+        
+        # Add to goal requirements
+        # add_rule here instead of set_rule because if the goal doesn't require malefor its rules will be empty,
+        # but otherwise, if malefor is needed, it won't completely overwrite it either.
+        add_rule(victory_location,
+                lambda state: state.count("Elite Mask", player) >= world.options.elite_hunter_threshold.value)
+        
+    elif goal == "clear_chapters":
+        chapter_clear_location_names = [
+            "The Catacombs Cleared",
+            "Twilight Falls Cleared",
+            "Valley of Avalar Cleared",
+            "Dragon City Cleared",
+            "Attack of the Golem Cleared",
+            "Ruins of Warfang Cleared",
+            "The Dam Cleared",
+            "The Destroyer Cleared",
+            "Burned Lands Cleared",
+            "Floating Islands Cleared"
+        ]
+
+        for name in chapter_clear_location_names:
+            world.get_location(name).place_locked_item(DotDItem("Chapter Clear", ItemClassification.progression, None, world.player))
+
+        # Add to goal requirements
+        # add_rule here instead of set_rule because if the goal doesn't require malefor its rules will be empty,
+        # but otherwise, if malefor is needed, it won't completely overwrite it either.
+        add_rule(victory_location,
+                lambda state: state.count("Chapter Clear", player) >= world.options.clear_chapters_threshold.value)
+            
+    
     malefors_lair.locations.append(victory_location)
 
 

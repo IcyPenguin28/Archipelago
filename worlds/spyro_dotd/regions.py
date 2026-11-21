@@ -293,6 +293,7 @@ def connect_regions(world: DotDWorld) -> None:
         menu.connect(region, f"Menu -> Chapter {i + 1}", make_rule(i))
 
     # Malefor's Lair unlocks once every other chapter has been unlocked
+    # TODO: Make work with new goal options
     menu.connect(malefor, "Menu -> Malefor's Lair",
                  lambda state: state.count("Progressive Chapter Unlock", player) >= len(regions))
 
