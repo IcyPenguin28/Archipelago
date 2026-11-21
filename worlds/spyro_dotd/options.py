@@ -257,10 +257,10 @@ class SpawnWithFullRestore(DefaultOnToggle):
 # This is in the format "option_name_in_snake_case: OptionClassName"
 @dataclass
 class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
-    goal_condition: GoalCondition
-    elite_hunter_threshold: EliteHunterThreshold
-    clear_chapters_threshold: ClearChaptersThreshold
-    always_defeat_malefor: AlwaysDefeatMalefor
+    # goal_condition: GoalCondition
+    # elite_hunter_threshold: EliteHunterThreshold
+    # clear_chapters_threshold: ClearChaptersThreshold
+    # always_defeat_malefor: AlwaysDefeatMalefor
     shuffle_chapter_order: ShuffleChapterOrder
     burned_lands_threshold: BurnedLandsThreshold
     shuffled_elements: ShuffledElements
@@ -279,15 +279,15 @@ class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
 
 # If we want to group our options by similar type we can do so as well. This looks nice on the website.
 dotd_option_groups: list[OptionGroup] = [
-    OptionGroup(
-        "Goal Options",
-        [
-            GoalCondition,
-            EliteHunterThreshold,
-            ClearChaptersThreshold,
-            AlwaysDefeatMalefor
-        ]
-    ),
+    # OptionGroup(
+    #     "Goal Options",
+    #     [
+    #         GoalCondition,
+    #         EliteHunterThreshold,
+    #         ClearChaptersThreshold,
+    #         AlwaysDefeatMalefor
+    #     ]
+    # ),
     OptionGroup(
         "Level Options",
         [

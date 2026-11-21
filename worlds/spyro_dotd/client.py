@@ -763,6 +763,7 @@ class DotDContext(CommonContext):
     # Full Restore
     # ------------------------------------------------------------------
     def full_restore(self):
+        print("Attempting full restore...")
         # Health
         spyro_max_hp = 300 + 100 * (health_gems_collected // 4)
         self.memory.write_u32(ADDR_SPYRO_CURRENT_HP, spyro_max_hp)
@@ -1155,8 +1156,9 @@ async def level_watcher(ctx: DotDContext):
                             ctx.memory.write_float(ctx.addr_cynder_hero + 0x9E0, 9999.0)
 
                         # Update stats based on Spawn With Full Restore settings
-                        if ctx.spawn_with_full_restore == 1 or ctx.spawn_with_full_restore == 3:
+                        if ctx.spawn_with_full_restore:
                             # On level spawn, restore stats for both dragons only if it's a level with the dragons in it
+                            print("[Level Watcher] Dragons detected")
                             ctx.full_restore()
                             
 
@@ -1235,19 +1237,19 @@ async def wall_running_learner(ctx: DotDContext):
 
         await asyncio.sleep(0.1)
 
-async def story_string_setter(ctx: DotDContext):
-    encoded_string = ctx.story_mode_string.encode("utf-16-le")+b"\x00\x00"
-    while True:
-        try:
-            if ctx.memory.is_connected and ctx._game_version_ok:
-                if ctx.current_level == "Main Menu":
-                    if ctx.memory.read_pointer(0x00A1AD98) != 0x00A9B2F0 or ctx.memory.read_bytes(0x00A9B2F0, len(encoded_string)) != encoded_string:
-                        # Integrity compromised. Restore.
-                        print("[Story String Setter] Integrity compromised. Attempting restoration.")
-                        install_story_mode_string_override(ctx)
-        except Exception as e:
-            print(f"Error in story string setter: {e}")
-        await asyncio.sleep(0.1)
+# async def story_string_setter(ctx: DotDContext):
+#     encoded_string = ctx.story_mode_string.encode("utf-16-le")+b"\x00\x00"
+#     while True:
+#         try:
+#             if ctx.memory.is_connected and ctx._game_version_ok:
+#                 if ctx.current_level == "Main Menu":
+#                     if ctx.memory.read_pointer(0x00A1AD98) != 0x00A9B2F0 or ctx.memory.read_bytes(0x00A9B2F0, len(encoded_string)) != encoded_string:
+#                         # Integrity compromised. Restore.
+#                         print("[Story String Setter] Integrity compromised. Attempting restoration.")
+#                         install_story_mode_string_override(ctx)
+#         except Exception as e:
+#             print(f"Error in story string setter: {e}")
+#         await asyncio.sleep(0.1)
 
 # ---------------------------------------------------------------------------
 # Entry point
@@ -1274,7 +1276,7 @@ def main(*args: str):
         death_task = asyncio.create_task(death_watcher(ctx), name="death watcher")
         goal_task = asyncio.create_task(goal_watcher(ctx), name="goal watcher")
         level_task = asyncio.create_task(level_watcher(ctx), name="level watcher")
-        story_string_task = asyncio.create_task(story_string_setter(ctx), name="story string setter")
+        # story_string_task = asyncio.create_task(story_string_setter(ctx), name="story string setter")
         watchdog_task = asyncio.create_task(emulator_watchdog(ctx), name="emulator watchdog")
 
         if gui_enabled:
@@ -1284,7 +1286,7 @@ def main(*args: str):
         await ctx.exit_event.wait()
 
         # Cancel all background tasks
-        for task in (watcher_task, health_gem_task, mana_gem_task, fury_task, death_task, goal_task, level_task, watchdog_task, story_string_task):
+        for task in (watcher_task, health_gem_task, mana_gem_task, fury_task, death_task, goal_task, level_task, watchdog_task):
             task.cancel()
             try:
                 await task
