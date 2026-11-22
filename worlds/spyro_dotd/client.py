@@ -371,6 +371,11 @@ class DotDContext(CommonContext):
         self.fix_broken_armors = False
         self.spawn_with_full_restore = False
 
+        # Default goal options values
+        self.goal_type = 0
+        self.goal_threshold = 0 # This value is shared between goal types that have a threshold since only one goal type may be active at a time
+        self.always_defeat_malefor = False
+
         # Prepare to fire an async task to check for when wall climbing/running can be learned
         self._wall_climbing_setter_task: Optional[asyncio.Task] = None
         self._wall_running_learner_task: Optional[asyncio.Task] = None
@@ -484,6 +489,17 @@ class DotDContext(CommonContext):
 
             # Full Restore on Spawn
             self.spawn_with_full_restore = bool(args["slot_data"].get("spawn_with_full_restore", 0))
+
+            # Goal options
+            self.goal_type = args["slot_data"].get("goal_condition", 0)
+            self.always_defeat_malefor = bool(args["slot_data"].get("always_defeat_malefor", 0))
+
+            if self.goal_type == 1:
+                # Elite Hunter
+                self.goal_threshold = args["slot_data"].get("elite_hunter_threshold", 8)
+            elif self.goal_type == 2:
+                # Clear Chapters
+                self.goal_threshold = args["slot_data"].get("clear_chapters_threshold", 10)
 
             # Set current level to None to reinit the level data / refetch pointers
             self.current_level = None
@@ -821,7 +837,7 @@ class DotDContext(CommonContext):
         if not self._goal_sent and self.slot:
             await self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
             self._goal_sent = True
-            print("Goal sent: Malefor defeated!")
+            print("Goal sent!")
 
     # ------------------------------------------------------------------
     # Hero pointers (dragon data in levels)
@@ -854,7 +870,7 @@ class DotDContext(CommonContext):
             print(f"Could not get Hero pointers.")
         return success
 
- # ------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Elite Enemy stuff
     # ------------------------------------------------------------------
     def edit_elite_data(self, elite_name: str) -> bool:
@@ -1099,10 +1115,33 @@ async def goal_watcher(ctx: DotDContext):
     """
     while True:
         try:
-            if ctx.slot and ctx.memory.is_connected and ctx._game_version_ok and not ctx._goal_sent and ctx.current_level and ctx.current_level != "Main Menu":
-                data = ctx.memory.read_bytes(ADDR_FINAL_BOSS_DEFEATED, 1)
-                if data is not None and int.from_bytes(data, byteorder="little") == 1:
-                    await ctx.send_goal_completion()
+            if ctx.slot and ctx.memory.is_connected and ctx._game_version_ok:
+                if ctx.goal_type == 0 or ctx.always_defeat_malefor:
+                    # Defeat Malefor
+                    if not ctx._goal_sent and ctx.current_level and ctx.current_level != "Main Menu":
+                        data = ctx.memory.read_bytes(ADDR_FINAL_BOSS_DEFEATED, 1)
+                        if data is not None and int.from_bytes(data, byteorder="little") == 1:
+                            await ctx.send_goal_completion()
+                if ctx.goal_type == 1:
+                    # Elite Hunter
+                    if not ctx._goal_sent and ctx.current_level:
+                        defeated_elites = ctx.checked_locations.intersection(set(id for id in range(301, 309))) # The location IDs for every elite enemy
+                        if len(defeated_elites) >= ctx.goal_threshold:
+                            # Goal completed. Either open Malefor's Lair on the Chapter menu or send goal immediately.
+                            if ctx.always_defeat_malefor:
+                                ctx.memory.write_bytes(LEVEL_NAME_TO_SCRATCH_ADDRESS["Malefor's Lair"], b"\x01")
+                            else:
+                                await ctx.send_goal_completion()
+                elif ctx.goal_type == 2:
+                    # Clear Chapters
+                    if not ctx._goal_sent and ctx.current_level:
+                        chapters_cleared = ctx.checked_locations.intersection(set(id for id in range(501, 511))) # The location IDs for every level clear
+                        if len(chapters_cleared) >= ctx.goal_threshold:
+                            # Goal completed. Either open Malefor's Lair on the Chapter menu or send goal immediately.
+                            if ctx.always_defeat_malefor:
+                                ctx.memory.write_bytes(LEVEL_NAME_TO_SCRATCH_ADDRESS["Malefor's Lair"], b"\x01")
+                            else:
+                                await ctx.send_goal_completion()
         except Exception as e:
             print(f"Error in goal_watcher: {e}")
         await asyncio.sleep(0.5)
@@ -1237,19 +1276,20 @@ async def wall_running_learner(ctx: DotDContext):
 
         await asyncio.sleep(0.1)
 
-# async def story_string_setter(ctx: DotDContext):
-#     encoded_string = ctx.story_mode_string.encode("utf-16-le")+b"\x00\x00"
-#     while True:
-#         try:
-#             if ctx.memory.is_connected and ctx._game_version_ok:
-#                 if ctx.current_level == "Main Menu":
-#                     if ctx.memory.read_pointer(0x00A1AD98) != 0x00A9B2F0 or ctx.memory.read_bytes(0x00A9B2F0, len(encoded_string)) != encoded_string:
-#                         # Integrity compromised. Restore.
-#                         print("[Story String Setter] Integrity compromised. Attempting restoration.")
-#                         install_story_mode_string_override(ctx)
-#         except Exception as e:
-#             print(f"Error in story string setter: {e}")
-#         await asyncio.sleep(0.1)
+async def story_string_setter(ctx: DotDContext):
+    encoded_string = ctx.story_mode_string.encode("utf-16-le")+b"\x00\x00"
+    while True:
+        try:
+            if ctx.memory.is_connected and ctx._game_version_ok:
+                if ctx.current_level == "Main Menu":
+                    if ctx.memory.read_pointer(0x00A1AD98) != 0x00A9B2F0 or ctx.memory.read_bytes(0x00A9B2F0, len(encoded_string)) != encoded_string:
+                        # Integrity compromised. Restore.
+                        # TODO: the memory at 0x00A9B2F0 is used for other things and is not a viable scratch address. Find another one.
+                        print("[Story String Setter] Integrity compromised. Attempting restoration.")
+                        install_story_mode_string_override(ctx)
+        except Exception as e:
+            print(f"Error in story string setter: {e}")
+        await asyncio.sleep(0.1)
 
 # ---------------------------------------------------------------------------
 # Entry point

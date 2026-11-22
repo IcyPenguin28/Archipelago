@@ -176,7 +176,11 @@ def create_all_items(world: DotDWorld) -> None:
     itempool.append(world.create_item("Cynder Bracers Fury"))
 
     # Add level keys
-    keys = [world.create_item("Progressive Chapter Unlock") for _ in range(10)]
+    if world.options.goal_condition.current_key == "defeat_malefor":
+        keys = [world.create_item("Progressive Chapter Unlock") for _ in range(10)]
+    else:
+        # One less for other goal conditions so that Malefor's Lair unlocks only when Always Defeat Malefor is on and goal is reached.
+        keys = [world.create_item("Progressive Chapter Unlock") for _ in range(9)]
     itempool += keys
     
     # NOTE: Some items may only exist if the player enables certain options

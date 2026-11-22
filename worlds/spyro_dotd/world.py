@@ -61,10 +61,10 @@ class DotDWorld(World):
         if not slot_data:
             return None
 
-        # self.options.goal_condition.value = slot_data["goal_condition"]
-        # self.options.elite_hunter_threshold.value = slot_data["elite_hunter_threshold"]
-        # self.options.clear_chapters_threshold.value = slot_data["clear_chapters_threshold"]
-        # self.options.always_defeat_malefor.value = slot_data["always_defeat_malefor"]
+        self.options.goal_condition.value = slot_data["goal_condition"]
+        self.options.elite_hunter_threshold.value = slot_data["elite_hunter_threshold"]
+        self.options.clear_chapters_threshold.value = slot_data["clear_chapters_threshold"]
+        self.options.always_defeat_malefor.value = slot_data["always_defeat_malefor"]
         self.options.death_link.value = slot_data["death_link"]
         self.options.learn_fury.value = slot_data["learn_fury"]
         self.options.shuffled_elements.value = set(slot_data["shuffled_elements"])
@@ -121,10 +121,10 @@ class DotDWorld(World):
         # If you need access to the player's chosen options on the client side, there is a helper for that.
         slot_data = self.options.as_dict(
             "death_link",
-            # "goal_condition",
-            # "elite_hunter_threshold",
-            # "clear_chapters_threshold",
-            # "always_defeat_malefor",
+            "goal_condition",
+            "elite_hunter_threshold",
+            "clear_chapters_threshold",
+            "always_defeat_malefor",
             "shuffle_chapter_order",
             "burned_lands_threshold",
             "shuffled_elements",

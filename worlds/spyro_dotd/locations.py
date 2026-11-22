@@ -664,19 +664,16 @@ def create_events(world: DotDWorld) -> None:
     # Determine Goal
     malefors_lair = world.get_region("Malefor's Lair")
     menu = world.get_region("Menu")
-    # goal = world.options.goal_condition.current_key
-    # needs_malefor = world.options.always_defeat_malefor
+    goal = world.options.goal_condition.current_key
+    needs_malefor = world.options.always_defeat_malefor.value
 
-    victory_location = DotDLocation(world.player, "Defeat Malefor", None, malefors_lair)
 
-    # UNCOMMENT WHEN TIME TO CONTINUE WORK ON GOAL STUFF
-    # 
-    # if goal == "defeat_malefor" or needs_malefor:
-    #     victory_location = DotDLocation(world.player, "Defeat Malefor", None, malefors_lair)
-    # elif goal == "elite_hunter":
-    #     victory_location = DotDLocation(world.player, "Hunt Elites", None, menu)
-    # elif goal == "clear_chapters":
-    #     victory_location = DotDLocation(world.player, "Clear Chapters", None, menu)
+    if goal == "defeat_malefor" or needs_malefor:
+        victory_location = DotDLocation(world.player, "Defeat Malefor", None, malefors_lair)
+    elif goal == "elite_hunter":
+        victory_location = DotDLocation(world.player, "Hunt Elites", None, menu)
+    elif goal == "clear_chapters":
+        victory_location = DotDLocation(world.player, "Clear Chapters", None, menu)
 
     victory_location.place_locked_item(
         DotDItem("Victory", ItemClassification.progression, None, world.player)
@@ -687,73 +684,96 @@ def create_events(world: DotDWorld) -> None:
     fury_option = world.options.learn_fury.current_key
 
     # Set victory location rules based on goal
-    # if goal == "defeat_malefor" or needs_malefor:
-    # Fury is required to defeat Malefor
-    if fury_option == "both_together":
-        set_rule(victory_location,
-            lambda state: state.has("Dragon's Fury", player))
-    elif fury_option == "both_separate":
-        # Either dragon alone can build an entire fury bar, so either fury item is sufficient
-        set_rule(victory_location,
-            lambda state: state.has("Spyro's Fury", player) and state.has("Cynder's Fury", player))
-    elif fury_option == "spyro":
-        set_rule(victory_location,
-            lambda state: state.has("Spyro's Fury", player))
-    elif fury_option == "cynder":
-        set_rule(victory_location,
-            lambda state: state.has("Cynder's Fury", player))
-    # else: no rule required. Both dragons can automatically build fury
+    if goal == "defeat_malefor" or needs_malefor:
+        # Fury is required to defeat Malefor
+        if fury_option == "both_together":
+            set_rule(victory_location,
+                lambda state: state.has("Dragon's Fury", player))
+        elif fury_option == "both_separate":
+            # Either dragon alone can build an entire fury bar, so either fury item is sufficient
+            set_rule(victory_location,
+                lambda state: state.has("Spyro's Fury", player) and state.has("Cynder's Fury", player))
+        elif fury_option == "spyro":
+            set_rule(victory_location,
+                lambda state: state.has("Spyro's Fury", player))
+        elif fury_option == "cynder":
+            set_rule(victory_location,
+                lambda state: state.has("Cynder's Fury", player))
+        # else: no rule required. Both dragons can automatically build fury
     
-    # if goal == "elite_hunter":
-    #     # Set up event locations on each Elite enemy
-    #     # That is, successfully checking the location acquires an "Elite Mask" item behind the scenes
-    #     # This "Elite Mask" is not shuffleable via AP and does not take up an item slot in the pool afaik
+    if goal == "elite_hunter":
+        # Set up event locations on each Elite enemy
+        # That is, successfully checking the location acquires an "Elite Mask" item behind the scenes
+        # This "Elite Mask" is not shuffleable via AP and does not take up an item slot in the pool afaik
 
-    #     elite_location_names = [
-    #         "Catacombs Elite",
-    #         "TF Elite",
-    #         "VoA Elite",
-    #         "RoW Elite",
-    #         "Dam Elite",
-    #         "BL Elite",
-    #         "FI Elite - Wyvern",
-    #         "FI Elite - Hero Grublin"
-    #     ]
+        elite_location_names = [
+            "Catacombs Elite",
+            "TF Elite",
+            "VoA Elite",
+            "RoW Elite",
+            "Dam Elite",
+            "BL Elite",
+            "FI Elite - Wyvern",
+            "FI Elite - Hero Grublin"
+        ]
 
-    #     for name in elite_location_names:
-    #         world.get_location(name).place_locked_item(DotDItem("Elite Mask", ItemClassification.progression, None, world.player))
+        for name in elite_location_names:
+            # Deep copy each elite AP Location data into new event locations
+            # This has to be done so that the Elite still sends an item in the item pool
+            # ... but also makes the generation take into account their defeat as well!
+            regular_location = world.get_location(name)
+
+            event_location = DotDLocation(world.player, regular_location.name+"_EV", None, regular_location.parent_region)
+            event_location.access_rule = regular_location.access_rule
+
+            event_location.place_locked_item(DotDItem("Elite Mask", ItemClassification.progression, None, world.player))
+
+            # DID YOU KNOW THAT SETTING THE PARENT REGION DOESN'T ACTUALLY MAKE THE LOCATION PART OF THE REGION???
+            regular_location.parent_region.locations.append(event_location)
         
-    #     # Add to goal requirements
-    #     # add_rule here instead of set_rule because if the goal doesn't require malefor its rules will be empty,
-    #     # but otherwise, if malefor is needed, it won't completely overwrite it either.
-    #     add_rule(victory_location,
-    #             lambda state: state.count("Elite Mask", player) >= world.options.elite_hunter_threshold.value)
         
-    # elif goal == "clear_chapters":
-    #     chapter_clear_location_names = [
-    #         "The Catacombs Cleared",
-    #         "Twilight Falls Cleared",
-    #         "Valley of Avalar Cleared",
-    #         "Dragon City Cleared",
-    #         "Attack of the Golem Cleared",
-    #         "Ruins of Warfang Cleared",
-    #         "The Dam Cleared",
-    #         "The Destroyer Cleared",
-    #         "Burned Lands Cleared",
-    #         "Floating Islands Cleared"
-    #     ]
-
-    #     for name in chapter_clear_location_names:
-    #         world.get_location(name).place_locked_item(DotDItem("Chapter Clear", ItemClassification.progression, None, world.player))
-
         # Add to goal requirements
         # add_rule here instead of set_rule because if the goal doesn't require malefor its rules will be empty,
         # but otherwise, if malefor is needed, it won't completely overwrite it either.
-        # add_rule(victory_location,
-        #         lambda state: state.count("Chapter Clear", player) >= world.options.clear_chapters_threshold.value)
+        add_rule(victory_location,
+                lambda state: state.count("Elite Mask", player) >= world.options.elite_hunter_threshold.value)
+        
+    elif goal == "clear_chapters":
+        # For explanations of things, see the comments in the `if goal == "elite_hunter"` section
+        chapter_clear_location_names = [
+            "The Catacombs Cleared",
+            "Twilight Falls Cleared",
+            "Valley of Avalar Cleared",
+            "Dragon City Cleared",
+            "Attack of the Golem Cleared",
+            "Ruins of Warfang Cleared",
+            "The Dam Cleared",
+            "The Destroyer Cleared",
+            "Burned Lands Cleared",
+            "Floating Islands Cleared"
+        ]
+
+        for name in chapter_clear_location_names:
+            regular_location = world.get_location(name)
+
+            event_location = DotDLocation(world.player, regular_location.name+"_EV", None, regular_location.parent_region)
+            event_location.access_rule = regular_location.access_rule
+
+            event_location.place_locked_item(DotDItem("Chapter Clear", ItemClassification.progression, None, world.player))
+
+            regular_location.parent_region.locations.append(event_location)
+
+        # Add to goal requirements
+        # add_rule here instead of set_rule because if the goal doesn't require Malefor its rules will be empty,
+        # but otherwise, if malefor is needed, it won't completely overwrite it either.
+        add_rule(victory_location,
+                lambda state: state.count("Chapter Clear", player) >= world.options.clear_chapters_threshold.value)
             
     
-    malefors_lair.locations.append(victory_location)
+    if needs_malefor or goal == "defeat_malefor":
+        malefors_lair.locations.append(victory_location)
+    else:
+        menu.locations.append(victory_location)
 
 
 def place_subregion_locations(world: DotDWorld, subregion_map: dict[str, list[str]]) -> None:

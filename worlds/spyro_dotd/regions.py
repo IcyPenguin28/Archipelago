@@ -292,10 +292,20 @@ def connect_regions(world: DotDWorld) -> None:
             return lambda state: state.count("Progressive Chapter Unlock", player) >= n
         menu.connect(region, f"Menu -> Chapter {i + 1}", make_rule(i))
 
-    # Malefor's Lair unlocks once every other chapter has been unlocked
-    # TODO: Make work with new goal options
-    menu.connect(malefor, "Menu -> Malefor's Lair",
-                 lambda state: state.count("Progressive Chapter Unlock", player) >= len(regions))
+    # Malefor's Lair accessibility depends on goal options
+    goal = world.options.goal_condition.current_key
+    needs_malefor = world.options.always_defeat_malefor.value
+    if goal == "defeat_malefor":
+        menu.connect(malefor, "Menu -> Malefor's Lair",
+                lambda state: state.count("Progressive Chapter Unlock", player) >= len(regions))
+    elif needs_malefor:
+        if goal == "elite_hunter":
+            menu.connect(malefor, "Menu -> Malefor's Lair",
+                    lambda state: state.count("Elite Mask", player) >= world.options.elite_hunter_threshold.value)
+        elif goal == "clear_chapters":
+            menu.connect(malefor, "Menu -> Malefor's Lair",
+                    lambda state: state.count("Chapter Clear", player) >= world.options.clear_chapters_threshold.value)
+    # else: Malefor's Lair should never need to be accessible.
 
 
 def connect_subregions_catacombs(world: DotDWorld):

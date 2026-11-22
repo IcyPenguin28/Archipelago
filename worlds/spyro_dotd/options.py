@@ -25,7 +25,7 @@ class GoalCondition(Choice):
 
     Elite Hunter: Defeat a set number of elite enemies.
 
-    Clear Chapters: Reach the end of a set number of chapters.
+    Clear Chapters: Reach the end of a set number of chapters (excluding Malefor's Lair).
     """
     display_name = "Goal Condition"
 
@@ -52,22 +52,30 @@ class EliteHunterThreshold(Range):
     range_start = 1
     range_end = 8
 
+    default = 8
+
 
 class ClearChaptersThreshold(Range):
     """
     This is the number of chapters you must clear to trigger goal.
+    This number does not include Malefor's Lair
     NOTE: This option only works if your goal condition is set to Clear Chapters.
     """
     display_name = "Clear Chapters Threshold"
 
     range_start = 1
-    range_end = 11
+    range_end = 10
+
+    default = 10
 
 
 class AlwaysDefeatMalefor(Toggle):
     """
     If your goal condition is something other than "Defeat Malefor",
     reaching your goal requirements opens Malefor's Lair, and defeating him will trigger goal.
+    
+    Recommended for a more climactic victory condition or
+    for appending Malefor's Lair to a run with a full 10 Clear Chapters goal.
     """
     display_name = "Always Defeat Malefor"
 
@@ -257,10 +265,10 @@ class SpawnWithFullRestore(DefaultOnToggle):
 # This is in the format "option_name_in_snake_case: OptionClassName"
 @dataclass
 class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
-    # goal_condition: GoalCondition
-    # elite_hunter_threshold: EliteHunterThreshold
-    # clear_chapters_threshold: ClearChaptersThreshold
-    # always_defeat_malefor: AlwaysDefeatMalefor
+    goal_condition: GoalCondition
+    elite_hunter_threshold: EliteHunterThreshold
+    clear_chapters_threshold: ClearChaptersThreshold
+    always_defeat_malefor: AlwaysDefeatMalefor
     shuffle_chapter_order: ShuffleChapterOrder
     burned_lands_threshold: BurnedLandsThreshold
     shuffled_elements: ShuffledElements
@@ -279,15 +287,15 @@ class DotDOptions(DeathLinkMixin, PerGameCommonOptions):
 
 # If we want to group our options by similar type we can do so as well. This looks nice on the website.
 dotd_option_groups: list[OptionGroup] = [
-    # OptionGroup(
-    #     "Goal Options",
-    #     [
-    #         GoalCondition,
-    #         EliteHunterThreshold,
-    #         ClearChaptersThreshold,
-    #         AlwaysDefeatMalefor
-    #     ]
-    # ),
+    OptionGroup(
+        "Goal Options",
+        [
+            GoalCondition,
+            EliteHunterThreshold,
+            ClearChaptersThreshold,
+            AlwaysDefeatMalefor
+        ]
+    ),
     OptionGroup(
         "Level Options",
         [
