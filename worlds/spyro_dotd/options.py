@@ -74,8 +74,12 @@ class AlwaysDefeatMalefor(Toggle):
     If your goal condition is something other than "Defeat Malefor",
     reaching your goal requirements opens Malefor's Lair, and defeating him will trigger goal.
     
-    Recommended for a more climactic victory condition or
-    for appending Malefor's Lair to a run with a full 10 Clear Chapters goal.
+    Recommended for a more climactic victory condition
+    or for finishing the game by completing all 11 chapters
+    (rather than just 10) via the "Clear Chapters" goal condition.
+
+    NOT recommended for players who want their Accessibility option set to Minimal,
+    as the fight against Malefor is extremely challenging with no upgrades.
     """
     display_name = "Always Defeat Malefor"
 
