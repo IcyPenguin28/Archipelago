@@ -730,7 +730,7 @@ class DotDContext(SuperContext):
         install_story_mode_permanent_lock(self)
         install_empty_blue_gems(self)
         install_enemy_health_mult_override(self)
-        install_story_mode_string_override(self)
+        # install_story_mode_string_override(self)
 
         # Options-based patches
         if self.hyper_enemies:
