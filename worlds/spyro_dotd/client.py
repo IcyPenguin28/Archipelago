@@ -34,7 +34,6 @@ logging.getLogger("websockets").setLevel(logging.WARNING)
 TRACKER_LOADED = False
 try:
     from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext
-    from worlds.tracker import TrackerCore
     TRACKER_LOADED = True
 except ModuleNotFoundError:
     from CommonClient import CommonContext as SuperContext
@@ -405,9 +404,7 @@ class DotDContext(SuperContext):
         gui = super().make_gui()
         # Change the client's name so it's no longer "Archipelago Text Client"
         gui.base_title = "Archipelago Spyro DotD Client"
-
-        if TRACKER_LOADED:
-            TrackerCore
+        gui.icon
         return gui
 
     # ------------------------------------------------------------------
