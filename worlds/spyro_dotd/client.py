@@ -28,6 +28,17 @@ from .patches import *
 import logging
 logging.getLogger("websockets").setLevel(logging.WARNING)
 
+# Attempt UT injection
+# This block of code has been lifted from Super Mario Sunshine's Archipelago implementation
+# Credit to them! :)
+TRACKER_LOADED = False
+try:
+    from worlds.tracker.TrackerClient import TrackerGameContext as SuperContext
+    from worlds.tracker import TrackerCore
+    TRACKER_LOADED = True
+except ModuleNotFoundError:
+    from CommonClient import CommonContext as SuperContext
+
 # Useful addresses
 ADDR_SPYRO_CURRENT_HP = 0x9FEAE0
 ADDR_SPYRO_BASE_HP = 0x9FEAE4
@@ -303,11 +314,13 @@ class MemoryReader:
         return self._safe_op(lambda: self.client.get_game_id())
 
 
-class DotDContext(CommonContext):
+class DotDContext(SuperContext):
     game = "The Legend of Spyro: Dawn of the Dragon"
 
     def __init__(self, server_address, password):
         super().__init__(server_address, password)
+
+        self.tags = {"AP"}  # According to SMS, this makes it a client rather than just a tracker
 
         self.memory = MemoryReader()
         self.items_handling = 0b111
@@ -392,6 +405,9 @@ class DotDContext(CommonContext):
         gui = super().make_gui()
         # Change the client's name so it's no longer "Archipelago Text Client"
         gui.base_title = "Archipelago Spyro DotD Client"
+
+        if TRACKER_LOADED:
+            TrackerCore
         return gui
 
     # ------------------------------------------------------------------
@@ -429,6 +445,7 @@ class DotDContext(CommonContext):
         print(f"Checked Locations: {self.checked_locations}")
 
     def on_package(self, cmd: str, args: dict):
+        super().on_package(cmd, args)   # Apparently necessary for the UT mix-in to see packages
         if cmd == "Connected":
             print("Connected to Archipelago!")
 
@@ -1319,6 +1336,8 @@ def main(*args: str):
         # story_string_task = asyncio.create_task(story_string_setter(ctx), name="story string setter")
         watchdog_task = asyncio.create_task(emulator_watchdog(ctx), name="emulator watchdog")
 
+        if TRACKER_LOADED:
+            ctx.run_generator()
         if gui_enabled:
             ctx.run_gui()
         ctx.run_cli()
