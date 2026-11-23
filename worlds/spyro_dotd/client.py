@@ -404,7 +404,6 @@ class DotDContext(SuperContext):
         gui = super().make_gui()
         # Change the client's name so it's no longer "Archipelago Text Client"
         gui.base_title = "Archipelago Spyro DotD Client"
-        gui.icon
         return gui
 
     # ------------------------------------------------------------------
